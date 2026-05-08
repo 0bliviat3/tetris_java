@@ -243,7 +243,7 @@ public class GamePanel extends JPanel {
             g.drawString("Next:", BOARD_WIDTH * BLOCK_SIZE + 15, 115);
             
             // Draw next piece centered in preview area
-            Point[] shape = nextTetromino.getShape();
+            int[][] shape = nextTetromino.getShape();
             Color color = nextTetromino.getColor();
             
             // Calculate centering for preview
@@ -251,18 +251,22 @@ public class GamePanel extends JPanel {
             int previewY = 115;
             
             // Draw the piece using its shape
-            for (Point p : shape) {
-                // Adjust coordinates for preview area
-                int x = previewX + 30 + p.x * BLOCK_SIZE;
-                int y = previewY - 15 + p.y * BLOCK_SIZE;
-                
-                // Draw block
-                g.setColor(color);
-                g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                
-                // Draw block outline
-                g.setColor(Color.WHITE);
-                g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+            for (int row = 0; row < shape.length; row++) {
+                for (int col = 0; col < shape[row].length; col++) {
+                    if (shape[row][col] != 0) {
+                        // Adjust coordinates for preview area
+                        int x = previewX + 30 + col * BLOCK_SIZE;
+                        int y = previewY - 15 + row * BLOCK_SIZE;
+                        
+                        // Draw block
+                        g.setColor(color);
+                        g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                        
+                        // Draw block outline
+                        g.setColor(Color.WHITE);
+                        g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                }
             }
         }
     }
