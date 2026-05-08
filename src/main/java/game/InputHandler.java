@@ -61,13 +61,9 @@ public class InputHandler extends KeyAdapter {
      * Restart the game
      */
     private void restartGame() {
-        // Reset the board to initial state
+        // Reset the board to initial state by calling the dedicated restart method
         Board board = gamePanel.getBoard();
-        board.setGameOver(false);
-        board.setPaused(false);
-        // This would normally reset the board completely
-        // For now we'll just regenerate the tetromino
-        board.generateNewTetromino();
+        board.reset();
     }
     
     /**

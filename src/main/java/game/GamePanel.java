@@ -12,6 +12,7 @@ public class GamePanel extends JPanel {
     private static final int BOARD_WIDTH = GameConstants.BOARD_WIDTH;
     private static final int BOARD_HEIGHT = GameConstants.BOARD_HEIGHT;
     private static final int BLOCK_SIZE = GameConstants.BLOCK_SIZE;
+    private static final int SIDE_PANEL_WIDTH = 180; // Increased from 150 to better accommodate all UI elements
     
     private final Timer gameTimer;
     private final InputHandler inputHandler;
@@ -21,7 +22,7 @@ public class GamePanel extends JPanel {
     public GamePanel() {
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(
-            BOARD_WIDTH * BLOCK_SIZE + 100, // Extra space for next piece preview
+            BOARD_WIDTH * BLOCK_SIZE + SIDE_PANEL_WIDTH, // Increased space for next piece preview and UI
             BOARD_HEIGHT * BLOCK_SIZE
         ));
         setBackground(Color.BLACK);
@@ -45,11 +46,18 @@ public class GamePanel extends JPanel {
         JButton helpButton = new JButton("Help");
         helpButton.addActionListener(e -> showHelpDialog());
         add(helpButton, BorderLayout.NORTH);
+        
+        // Ensure we get focus on startup
+        SwingUtilities.invokeLater(() -> {
+            requestFocusInWindow();
+        });
     }
     
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        // Clear the panel to avoid residual rendering
+        g.clearRect(0, 0, getWidth(), getHeight());
         // Draw the game board
         drawBoard(g);
     }
@@ -172,11 +180,11 @@ public class GamePanel extends JPanel {
         if (nextTetromino != null) {
             // Draw preview panel background
             g.setColor(Color.DARK_GRAY);
-            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 120, 120);
+            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 140, 140);
             
             // Draw preview border
             g.setColor(Color.LIGHT_GRAY);
-            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 120, 120);
+            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 140, 140);
             
             // Draw next piece
             g.setColor(Color.WHITE);
@@ -196,8 +204,8 @@ public class GamePanel extends JPanel {
             }
             
             // Calculate centering offsets
-            int previewWidth = 120;
-            int previewHeight = 120;
+            int previewWidth = 140;
+            int previewHeight = 140;
             int blockWidth = BLOCK_SIZE;
             int blockHeight = BLOCK_SIZE;
             
@@ -274,6 +282,28 @@ public class GamePanel extends JPanel {
         SwingUtilities.invokeLater(() -> {
             requestFocusInWindow();
         });
+    }
+    
+    /**
+     * Restarts the game completely
+     */
+    public void restartGame() {
+        // Stop the game loop and timer
+        gameLoop.stop();
+        gameTimer.stop();
+        
+        // Reset the board completely
+        board.reset();
+        
+        // Restart timers
+        gameTimer.start();
+        gameLoop.start();
+        
+        // Request focus to ensure keyboard input works
+        requestFocusInWindow();
+        
+        // Force repaint to refresh UI
+        repaint();
     }
     
     /**

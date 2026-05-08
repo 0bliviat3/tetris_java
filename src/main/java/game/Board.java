@@ -385,18 +385,24 @@ public class Board {
     }
     
     /**
-     * Gets the rotation of the current tetromino
+     * Resets the board to initial state
      */
-    public int getCurrentTetrominoRotation() {
-        return currentTetromino != null ? currentTetromino.getRotation() : 0;
-    }
-    
-    /**
-     * Sets the rotation of the current tetromino (for testing)
-     */
-    public void setCurrentTetrominoRotation(int rotation) {
-        if (currentTetromino != null) {
-            currentTetromino.setRotation(rotation);
-        }
+    public void reset() {
+        // Clear the grid
+        clearGrid();
+        
+        // Reset game state
+        isGameOver = false;
+        isPaused = false;
+        score = 0;
+        level = 1;
+        linesCleared = 0;
+        
+        // Reset tetrominoes
+        currentTetromino = null;
+        nextTetromino = null;
+        
+        // Generate new tetrominoes
+        generateNewTetromino();
     }
 }
