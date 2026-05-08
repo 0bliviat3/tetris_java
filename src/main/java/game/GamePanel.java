@@ -4,7 +4,6 @@ import game.constants.GameConstants;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.event.ActionEvent;
 
 /**
  * Main game panel that handles rendering and user interaction
@@ -47,46 +46,6 @@ public class GamePanel extends JPanel {
         SwingUtilities.invokeLater(() -> {
             requestFocusInWindow();
         });
-    }
-    
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        // Clear the panel to avoid residual rendering
-        g.clearRect(0, 0, getWidth(), getHeight());
-        // Draw the game board
-        drawBoard(g);
-    }
-    
-    /**
-     * Draws the game board and all elements
-     */
-    private void drawBoard(Graphics g) {
-        // Draw grid lines
-        g.setColor(Color.GRAY);
-        for (int x = 0; x <= BOARD_WIDTH; x++) {
-            g.drawLine(x * BLOCK_SIZE, 0, x * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
-        }
-        for (int y = 0; y <= BOARD_HEIGHT; y++) {
-            g.drawLine(0, y * BLOCK_SIZE, BOARD_WIDTH * BLOCK_SIZE, y * BLOCK_SIZE);
-        }
-        
-        // Draw placed blocks
-        drawPlacedBlocks(g);
-        
-        // Draw current tetromino if exists
-        drawCurrentTetromino(g);
-        
-        // Draw next piece preview
-        drawNextPiece(g);
-        
-        // Draw game info
-        drawGameInfo(g);
-        
-        // Draw game over screen if game is over
-        if (board.isGameOver()) {
-            drawGameOver(g);
-        }
     }
     
     @Override
