@@ -172,11 +172,11 @@ public class GamePanel extends JPanel {
         if (nextTetromino != null) {
             // Draw preview panel background
             g.setColor(Color.DARK_GRAY);
-            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 80, 80);
+            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 120, 120);
             
             // Draw preview border
             g.setColor(Color.LIGHT_GRAY);
-            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 80, 80);
+            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 120, 120);
             
             // Draw next piece
             g.setColor(Color.WHITE);
@@ -186,17 +186,44 @@ public class GamePanel extends JPanel {
             int[][] shape = nextTetromino.getShape();
             Color color = nextTetromino.getColor();
             
+            // Calculate dimensions needed for the preview
+            int maxRows = shape.length;
+            int maxCols = 0;
+            for (int[] row : shape) {
+                if (row.length > maxCols) {
+                    maxCols = row.length;
+                }
+            }
+            
+            // Calculate centering offsets
+            int previewWidth = 120;
+            int previewHeight = 120;
+            int blockWidth = BLOCK_SIZE;
+            int blockHeight = BLOCK_SIZE;
+            
+            // Center the preview - account for max dimensions needed
+            int centerX = BOARD_WIDTH * BLOCK_SIZE + 10 + (previewWidth / 2) - ((maxCols * blockWidth) / 2);
+            int centerY = 10 + (previewHeight / 2) - ((maxRows * blockHeight) / 2);
+            
+            // Adjust for I-piece (4 blocks wide) which requires extra space
+            // Also account for rotation - the I piece can be up to 4 blocks wide in any orientation
+            int maxBlockWidth = 4; // Maximum possible width for any tetromino in any orientation
+            int requiredWidth = maxBlockWidth * blockWidth;
+            if (requiredWidth > previewWidth) {
+                centerX -= (requiredWidth - previewWidth) / 2;
+            }
+            
             g.setColor(color);
             for (int row = 0; row < shape.length; row++) {
                 for (int col = 0; col < shape[row].length; col++) {
                     if (shape[row][col] != 0) {
-                        int x = (BOARD_WIDTH * BLOCK_SIZE + 10 + col * BLOCK_SIZE) + 20;
-                        int y = (10 + row * BLOCK_SIZE) + 20;
-                        g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                        int x = centerX + (col * blockWidth);
+                        int y = centerY + (row * blockHeight);
+                        g.fillRect(x, y, blockWidth, blockHeight);
                         
                         // Draw block border
                         g.setColor(Color.DARK_GRAY);
-                        g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                        g.drawRect(x, y, blockWidth, blockHeight);
                         g.setColor(color);
                     }
                 }
@@ -243,6 +270,10 @@ public class GamePanel extends JPanel {
             R : Restart""";
         
         JOptionPane.showMessageDialog(this, helpText, "Controls", JOptionPane.INFORMATION_MESSAGE);
+        // Restore focus to GamePanel after help dialog is closed
+        SwingUtilities.invokeLater(() -> {
+            requestFocusInWindow();
+        });
     }
     
     /**
