@@ -4,6 +4,7 @@ import game.constants.GameConstants;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Main game panel that handles rendering and user interaction
@@ -42,15 +43,50 @@ public class GamePanel extends JPanel {
         // Start the game loop
         gameLoop.start();
         
-        // Add help button
-        JButton helpButton = new JButton("Help");
-        helpButton.addActionListener(e -> showHelpDialog());
-        add(helpButton, BorderLayout.NORTH);
-        
         // Ensure we get focus on startup
         SwingUtilities.invokeLater(() -> {
             requestFocusInWindow();
         });
+    }
+    
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        // Clear the panel to avoid residual rendering
+        g.clearRect(0, 0, getWidth(), getHeight());
+        // Draw the game board
+        drawBoard(g);
+    }
+    
+    /**
+     * Draws the game board and all elements
+     */
+    private void drawBoard(Graphics g) {
+        // Draw grid lines
+        g.setColor(Color.GRAY);
+        for (int x = 0; x <= BOARD_WIDTH; x++) {
+            g.drawLine(x * BLOCK_SIZE, 0, x * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
+        }
+        for (int y = 0; y <= BOARD_HEIGHT; y++) {
+            g.drawLine(0, y * BLOCK_SIZE, BOARD_WIDTH * BLOCK_SIZE, y * BLOCK_SIZE);
+        }
+        
+        // Draw placed blocks
+        drawPlacedBlocks(g);
+        
+        // Draw current tetromino if exists
+        drawCurrentTetromino(g);
+        
+        // Draw next piece preview
+        drawNextPiece(g);
+        
+        // Draw game info
+        drawGameInfo(g);
+        
+        // Draw game over screen if game is over
+        if (board.isGameOver()) {
+            drawGameOver(g);
+        }
     }
     
     @Override
@@ -203,24 +239,41 @@ public class GamePanel extends JPanel {
                 }
             }
             
-            // Calculate centering offsets
+            // Calculate centering offsets - improved version
             int previewWidth = 140;
             int previewHeight = 140;
             int blockWidth = BLOCK_SIZE;
             int blockHeight = BLOCK_SIZE;
             
-            // Center the preview - account for max dimensions needed
-            int centerX = BOARD_WIDTH * BLOCK_SIZE + 10 + (previewWidth / 2) - ((maxCols * blockWidth) / 2);
-            int centerY = 10 + (previewHeight / 2) - ((maxRows * blockHeight) / 2);
+            // Find min/max positions to determine actual bounding box
+            int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
+            int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
             
-            // Adjust for I-piece (4 blocks wide) which requires extra space
-            // Also account for rotation - the I piece can be up to 4 blocks wide in any orientation
-            int maxBlockWidth = 4; // Maximum possible width for any tetromino in any orientation
-            int requiredWidth = maxBlockWidth * blockWidth;
-            if (requiredWidth > previewWidth) {
-                centerX -= (requiredWidth - previewWidth) / 2;
+            // Find bounding box of the shape
+            for (int row = 0; row < shape.length; row++) {
+                for (int col = 0; col < shape[row].length; col++) {
+                    if (shape[row][col] != 0) {
+                        minX = Math.min(minX, col);
+                        minY = Math.min(minY, row);
+                        maxX = Math.max(maxX, col);
+                        maxY = Math.max(maxY, row);
+                    }
+                }
             }
             
+            // Calculate dimensions of actual shape
+            int shapeWidth = maxX - minX + 1;
+            int shapeHeight = maxY - minY + 1;
+            
+            // Calculate centering offsets
+            int centerX = BOARD_WIDTH * BLOCK_SIZE + 10 + (previewWidth / 2) - ((shapeWidth * blockWidth) / 2);
+            int centerY = 10 + (previewHeight / 2) - ((shapeHeight * blockHeight) / 2);
+            
+            // Offset by minimum position to center correctly
+            centerX -= minX * blockWidth;
+            centerY -= minY * blockHeight;
+            
+            // Draw the actual shape
             g.setColor(color);
             for (int row = 0; row < shape.length; row++) {
                 for (int col = 0; col < shape[row].length; col++) {
