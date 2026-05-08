@@ -18,6 +18,7 @@ public class GamePanel extends JPanel {
     private final InputHandler inputHandler;
     private final Board board;
     private final GameLoop gameLoop;
+    private JButton helpButton;
     
     public GamePanel() {
         setLayout(new BorderLayout());
@@ -25,7 +26,7 @@ public class GamePanel extends JPanel {
             BOARD_WIDTH * BLOCK_SIZE + SIDE_PANEL_WIDTH, // Increased space for next piece preview and UI
             BOARD_HEIGHT * BLOCK_SIZE
         ));
-        setBackground(Color.BLACK);
+        setBackground(new Color(30, 30, 30)); // Darker background
         setFocusable(true);
         
         // Initialize game components
@@ -42,10 +43,37 @@ public class GamePanel extends JPanel {
         // Start the game loop
         gameLoop.start();
         
+        // Create and setup help button
+        helpButton = new JButton("Help");
+        helpButton.addActionListener(e -> showHelpDialog());
+        helpButton.setFocusable(false);
+        helpButton.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH - 20, 30));
+        
+        // Add help button to a side panel
+        JPanel sidePanel = new JPanel();
+        sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
+        sidePanel.setBackground(new Color(30, 30, 30));
+        sidePanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, BOARD_HEIGHT * BLOCK_SIZE));
+        sidePanel.add(Box.createVerticalGlue());
+        sidePanel.add(helpButton);
+        sidePanel.add(Box.createVerticalGlue());
+        
+        // Add side panel to the right side
+        add(sidePanel, BorderLayout.EAST);
+        
         // Ensure we get focus on startup
         SwingUtilities.invokeLater(() -> {
             requestFocusInWindow();
         });
+    }
+    
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        // Clear the panel to avoid residual rendering
+        g.clearRect(0, 0, getWidth(), getHeight());
+        // Draw the game board
+        drawBoard(g);
     }
     
     @Override
@@ -79,8 +107,11 @@ public class GamePanel extends JPanel {
         // Draw next piece preview
         drawNextPiece(g);
         
-        // Draw game info
+        // Draw game info at top-left
         drawGameInfo(g);
+        
+        // Draw help button in right panel at bottom
+        drawHelpButton(g);
         
         // Draw game over screen if game is over
         if (board.isGameOver()) {
@@ -155,7 +186,7 @@ public class GamePanel extends JPanel {
     }
     
     /**
-     * Draws game information (score, level, etc.)
+     * Draws game information (score, level, etc.) at top-left
      */
     private void drawGameInfo(Graphics g) {
         g.setColor(Color.WHITE);
@@ -165,6 +196,27 @@ public class GamePanel extends JPanel {
         g.drawString("Score: " + board.getScore(), 10, 40);
         g.drawString("Level: " + board.getLevel(), 10, 60);
         g.drawString("Lines: " + board.getLinesCleared(), 10, 80);
+    }
+    
+    /**
+     * Draws the help button in the right panel area
+     */
+    private void drawHelpButton(Graphics g) {
+        // Draw help button area in right panel
+        int panelX = BOARD_WIDTH * BLOCK_SIZE + 10;
+        int panelY = BOARD_HEIGHT * BLOCK_SIZE - 40; // Position at bottom of right panel
+        
+        // Draw button area background
+        g.setColor(Color.DARK_GRAY);
+        g.fillRect(panelX, panelY, 160, 30);
+        
+        // Draw button border
+        g.setColor(Color.LIGHT_GRAY);
+        g.drawRect(panelX, panelY, 160, 30);
+        
+        // Draw button text
+        g.setColor(Color.WHITE);
+        g.drawString("Help", panelX + 70, panelY + 20);
     }
     
     /**
