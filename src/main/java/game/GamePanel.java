@@ -48,15 +48,23 @@ public class GamePanel extends JPanel {
         helpButton.addActionListener(e -> showHelpDialog());
         helpButton.setFocusable(false);
         helpButton.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH - 20, 30));
+        helpButton.setBackground(Color.DARK_GRAY);
+        helpButton.setForeground(Color.WHITE);
         
-        // Add help button to a side panel
+        // Add help button to a side panel at bottom
         JPanel sidePanel = new JPanel();
         sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
         sidePanel.setBackground(new Color(30, 30, 30));
         sidePanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, BOARD_HEIGHT * BLOCK_SIZE));
+        sidePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        
+        // Create bottom panel for help button
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.setBackground(new Color(30, 30, 30));
+        bottomPanel.add(helpButton);
+        
         sidePanel.add(Box.createVerticalGlue());
-        sidePanel.add(helpButton);
-        sidePanel.add(Box.createVerticalGlue());
+        sidePanel.add(bottomPanel);
         
         // Add side panel to the right side
         add(sidePanel, BorderLayout.EAST);
@@ -76,21 +84,16 @@ public class GamePanel extends JPanel {
         drawBoard(g);
     }
     
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        // Clear the panel to avoid residual rendering
-        g.clearRect(0, 0, getWidth(), getHeight());
-        // Draw the game board
-        drawBoard(g);
-    }
-    
     /**
      * Draws the game board and all elements
      */
     private void drawBoard(Graphics g) {
-        // Draw grid lines
-        g.setColor(Color.GRAY);
+        // Draw dark background
+        g.setColor(new Color(30, 30, 30));
+        g.fillRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
+        
+        // Draw grid lines with darker color
+        g.setColor(new Color(50, 50, 50));
         for (int x = 0; x <= BOARD_WIDTH; x++) {
             g.drawLine(x * BLOCK_SIZE, 0, x * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
         }
@@ -190,6 +193,7 @@ public class GamePanel extends JPanel {
      */
     private void drawGameInfo(Graphics g) {
         g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 12));
         g.drawString("TETRIS", 10, 20);
         
         // Draw score and level
@@ -220,59 +224,48 @@ public class GamePanel extends JPanel {
     }
     
     /**
-     * Draws the next piece preview
+     * Draws the next piece preview in the side panel
      */
     private void drawNextPiece(Graphics g) {
         Tetromino nextTetromino = board.getNextTetromino();
         if (nextTetromino != null) {
             // Draw preview panel background
-            g.setColor(Color.DARK_GRAY);
-            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 140, 140);
+            g.setColor(new Color(30, 30, 30));
+            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 60);
             
             // Draw preview border
-            g.setColor(Color.LIGHT_GRAY);
-            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 140, 140);
+            g.setColor(Color.GRAY);
+            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 60);
             
-            // Draw next piece
+            // Draw next piece label
             g.setColor(Color.WHITE);
-            g.drawString("Next:", BOARD_WIDTH * BLOCK_SIZE + 15, 25);
+            g.setFont(new Font("Arial", Font.BOLD, 12));
+            g.drawString("Next:", BOARD_WIDTH * BLOCK_SIZE + 15, 115);
             
-            // Get the shape and draw it
-            int[][] shape = nextTetromino.getShape();
+            // Draw next piece centered in preview area
+            Point[] shape = nextTetromino.getShape();
             Color color = nextTetromino.getColor();
             
-            // Calculate dimensions needed for the preview
-            int maxRows = shape.length;
-            int maxCols = 0;
-            for (int[] row : shape) {
-                if (row.length > maxCols) {
-                    maxCols = row.length;
-                }
+            // Calculate centering for preview
+            int previewX = BOARD_WIDTH * BLOCK_SIZE + 10;
+            int previewY = 115;
+            
+            // Draw the piece using its shape
+            for (Point p : shape) {
+                // Adjust coordinates for preview area
+                int x = previewX + 30 + p.x * BLOCK_SIZE;
+                int y = previewY - 15 + p.y * BLOCK_SIZE;
+                
+                // Draw block
+                g.setColor(color);
+                g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                
+                // Draw block outline
+                g.setColor(Color.WHITE);
+                g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
             }
-            
-            // Calculate centering offsets - improved version
-            int previewWidth = 140;
-            int previewHeight = 140;
-            int blockWidth = BLOCK_SIZE;
-            int blockHeight = BLOCK_SIZE;
-            
-            // Find min/max positions to determine actual bounding box
-            int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
-            int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
-            
-            // Find bounding box of the shape
-            for (int row = 0; row < shape.length; row++) {
-                for (int col = 0; col < shape[row].length; col++) {
-                    if (shape[row][col] != 0) {
-                        minX = Math.min(minX, col);
-                        minY = Math.min(minY, row);
-                        maxX = Math.max(maxX, col);
-                        maxY = Math.max(maxY, row);
-                    }
-                }
-            }
-            
-            // Calculate dimensions of actual shape
+        }
+    }
             int shapeWidth = maxX - minX + 1;
             int shapeHeight = maxY - minY + 1;
             
