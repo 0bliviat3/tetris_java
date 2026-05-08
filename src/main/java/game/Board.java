@@ -256,10 +256,28 @@ public class Board {
     public void hardDrop() {
         if (currentTetromino == null) return;
         
-        // Keep moving down until we hit something
-        while (moveDown()) {
-            // Continue moving down
+        // Move the tetromino down until it can't go further
+        // We use a different approach to avoid continuous spawning
+        int dropDistance = 0;
+        while (isValidPosition(currentTetromino, 0, 1)) {
+            currentTetromino.move(1, 0);
+            dropDistance++;
         }
+        
+        // Place the tetromino at its final position
+        placeTetromino();
+        
+        // Clear lines and check for game over
+        int linesCleared = clearLines();
+        
+        // Check if game is over (if new tetromino can't be placed)
+        if (nextTetromino != null && !isValidPosition(nextTetromino, 0, 0)) {
+            isGameOver = true;
+            return;
+        }
+        
+        // Generate a new tetromino
+        generateNewTetromino();
     }
     
     /**

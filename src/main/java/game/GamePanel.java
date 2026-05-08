@@ -19,8 +19,9 @@ public class GamePanel extends JPanel {
     private final GameLoop gameLoop;
     
     public GamePanel() {
+        setLayout(new BorderLayout());
         setPreferredSize(new Dimension(
-            BOARD_WIDTH * BLOCK_SIZE,
+            BOARD_WIDTH * BLOCK_SIZE + 100, // Extra space for next piece preview
             BOARD_HEIGHT * BLOCK_SIZE
         ));
         setBackground(Color.BLACK);
@@ -39,6 +40,11 @@ public class GamePanel extends JPanel {
         
         // Start the game loop
         gameLoop.start();
+        
+        // Add help button
+        JButton helpButton = new JButton("Help");
+        helpButton.addActionListener(e -> showHelpDialog());
+        add(helpButton, BorderLayout.NORTH);
     }
     
     @Override
@@ -67,8 +73,16 @@ public class GamePanel extends JPanel {
         // Draw current tetromino if exists
         drawCurrentTetromino(g);
         
+        // Draw next piece preview
+        drawNextPiece(g);
+        
         // Draw game info
         drawGameInfo(g);
+        
+        // Draw game over screen if game is over
+        if (board.isGameOver()) {
+            drawGameOver(g);
+        }
     }
     
     /**
@@ -143,6 +157,92 @@ public class GamePanel extends JPanel {
     private void drawGameInfo(Graphics g) {
         g.setColor(Color.WHITE);
         g.drawString("TETRIS", 10, 20);
+        
+        // Draw score and level
+        g.drawString("Score: " + board.getScore(), 10, 40);
+        g.drawString("Level: " + board.getLevel(), 10, 60);
+        g.drawString("Lines: " + board.getLinesCleared(), 10, 80);
+    }
+    
+    /**
+     * Draws the next piece preview
+     */
+    private void drawNextPiece(Graphics g) {
+        Tetromino nextTetromino = board.getNextTetromino();
+        if (nextTetromino != null) {
+            // Draw preview panel background
+            g.setColor(Color.DARK_GRAY);
+            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 80, 80);
+            
+            // Draw preview border
+            g.setColor(Color.LIGHT_GRAY);
+            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 10, 80, 80);
+            
+            // Draw next piece
+            g.setColor(Color.WHITE);
+            g.drawString("Next:", BOARD_WIDTH * BLOCK_SIZE + 15, 25);
+            
+            // Get the shape and draw it
+            int[][] shape = nextTetromino.getShape();
+            Color color = nextTetromino.getColor();
+            
+            g.setColor(color);
+            for (int row = 0; row < shape.length; row++) {
+                for (int col = 0; col < shape[row].length; col++) {
+                    if (shape[row][col] != 0) {
+                        int x = (BOARD_WIDTH * BLOCK_SIZE + 10 + col * BLOCK_SIZE) + 20;
+                        int y = (10 + row * BLOCK_SIZE) + 20;
+                        g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                        
+                        // Draw block border
+                        g.setColor(Color.DARK_GRAY);
+                        g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                        g.setColor(color);
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Draws game over screen
+     */
+    private void drawGameOver(Graphics g) {
+        // Draw semi-transparent overlay
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
+        
+        // Draw game over text
+        g.setColor(Color.RED);
+        Font font = new Font("Arial", Font.BOLD, 32);
+        g.setFont(font);
+        g.drawString("GAME OVER", BOARD_WIDTH * BLOCK_SIZE / 2 - 100, BOARD_HEIGHT * BLOCK_SIZE / 2 - 30);
+        
+        // Draw score
+        g.setColor(Color.WHITE);
+        font = new Font("Arial", Font.BOLD, 20);
+        g.setFont(font);
+        g.drawString("Score: " + board.getScore(), BOARD_WIDTH * BLOCK_SIZE / 2 - 60, BOARD_HEIGHT * BLOCK_SIZE / 2 + 10);
+        
+        // Draw restart button
+        g.setColor(Color.GREEN);
+        g.drawString("Click Restart Button to Play Again", BOARD_WIDTH * BLOCK_SIZE / 2 - 130, BOARD_HEIGHT * BLOCK_SIZE / 2 + 50);
+    }
+    
+    /**
+     * Shows help dialog
+     */
+    private void showHelpDialog() {
+        String helpText = """
+            ← : Left Move
+            → : Right Move
+            ↓ : Soft Drop  
+            ↑ : Rotate
+            Space : Hard Drop
+            P : Pause
+            R : Restart""";
+        
+        JOptionPane.showMessageDialog(this, helpText, "Controls", JOptionPane.INFORMATION_MESSAGE);
     }
     
     /**
