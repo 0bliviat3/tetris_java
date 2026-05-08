@@ -29,7 +29,7 @@ public class GamePanel extends JPanel {
         // Initialize game components
         board = new Board();
         inputHandler = new InputHandler(this);
-        gameLoop = new GameLoop();
+        gameLoop = new GameLoop(board);
         
         addKeyListener(inputHandler);
         
