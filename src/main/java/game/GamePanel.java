@@ -266,35 +266,6 @@ public class GamePanel extends JPanel {
             }
         }
     }
-            int shapeWidth = maxX - minX + 1;
-            int shapeHeight = maxY - minY + 1;
-            
-            // Calculate centering offsets
-            int centerX = BOARD_WIDTH * BLOCK_SIZE + 10 + (previewWidth / 2) - ((shapeWidth * blockWidth) / 2);
-            int centerY = 10 + (previewHeight / 2) - ((shapeHeight * blockHeight) / 2);
-            
-            // Offset by minimum position to center correctly
-            centerX -= minX * blockWidth;
-            centerY -= minY * blockHeight;
-            
-            // Draw the actual shape
-            g.setColor(color);
-            for (int row = 0; row < shape.length; row++) {
-                for (int col = 0; col < shape[row].length; col++) {
-                    if (shape[row][col] != 0) {
-                        int x = centerX + (col * blockWidth);
-                        int y = centerY + (row * blockHeight);
-                        g.fillRect(x, y, blockWidth, blockHeight);
-                        
-                        // Draw block border
-                        g.setColor(Color.DARK_GRAY);
-                        g.drawRect(x, y, blockWidth, blockHeight);
-                        g.setColor(color);
-                    }
-                }
-            }
-        }
-    }
     
     /**
      * Draws game over screen
