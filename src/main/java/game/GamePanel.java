@@ -20,25 +20,20 @@ public class GamePanel extends JPanel {
     private final InputHandler inputHandler;
     private final Board board;
     private final GameLoop gameLoop;
-    private JButton helpButton;
-    
-    // UI panels for better separation of concerns
-    private final JPanel sidePanel;
-    private final JPanel uiPanel;
     
     public GamePanel() {
         // Initialize the game board
-        board = new Board(BOARD_WIDTH, BOARD_HEIGHT);
+        board = new Board();
         inputHandler = new InputHandler(this, board);
         gameLoop = new GameLoop(this, board);
         
         // Set up the main panel
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(
-            BOARD_WIDTH * BLOCK_SIZE + SIDE_PANEL_WIDTH, // Increased space for next piece preview and UI
+            BOARD_WIDTH * BLOCK_SIZE + SIDE_PANEL_WIDTH,
             BOARD_HEIGHT * BLOCK_SIZE
         ));
-        setBackground(new Color(30, 30, 30)); // Darker background
+        setBackground(new Color(30, 30, 30));
         setFocusable(true);
         setOpaque(true);
         
@@ -49,49 +44,8 @@ public class GamePanel extends JPanel {
         // Start the game loop
         gameLoop.start();
         
-        // Create side panel for UI elements
-        sidePanel = new JPanel();
-        sidePanel.setLayout(new BorderLayout());
-        sidePanel.setBackground(new Color(30, 30, 30));
-        sidePanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, BOARD_HEIGHT * BLOCK_SIZE));
-        sidePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        
-        // Create a dedicated panel for game info (score, level, next piece)
-        uiPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                // Draw score and level information
-                drawGameInfo(g);
-                
-                // Draw next piece preview
-                drawNextPiece(g);
-            }
-        };
-        uiPanel.setLayout(new BorderLayout());
-        uiPanel.setBackground(new Color(30, 30, 30));
-        uiPanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, BOARD_HEIGHT * BLOCK_SIZE - 50));
-        uiPanel.setOpaque(false); // Make it transparent to allow underlying rendering
-        
-        // Create bottom panel for help button
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottomPanel.setBackground(new Color(30, 30, 30));
-        
-        // Create and setup help button
-        helpButton = new JButton("Help");
-        helpButton.addActionListener(e -> showHelpDialog());
-        helpButton.setFocusable(false);
-        helpButton.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH - 20, 30));
-        helpButton.setBackground(Color.DARK_GRAY);
-        helpButton.setForeground(Color.WHITE);
-        
-        bottomPanel.add(helpButton);
-        
-        // Add panels to side panel
-        sidePanel.add(uiPanel, BorderLayout.CENTER);
-        sidePanel.add(bottomPanel, BorderLayout.SOUTH);
-        
-        // Add side panel to the right side
+        // Create dedicated side panel for UI elements
+        SidePanel sidePanel = new SidePanel(board);
         add(sidePanel, BorderLayout.EAST);
     }
     
@@ -127,12 +81,6 @@ public class GamePanel extends JPanel {
         // Draw current tetromino if exists
         drawCurrentTetromino(g);
         
-        // Draw next piece preview
-        drawNextPiece(g);
-        
-        // Draw game info at top-left
-        drawGameInfo(g);
-        
         // Draw game over screen if game is over
         if (board.isGameOver()) {
             drawGameOver(g);
@@ -150,15 +98,29 @@ public class GamePanel extends JPanel {
                     // Draw colored block
                     Color color = getBlockColor(grid[row][col]);
                     g.setColor(color);
-                    g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, 
-                              BLOCK_SIZE, BLOCK_SIZE);
+                    g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
                     
                     // Draw block border
-                    g.setColor(Color.DARK_GRAY);
-                    g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, 
-                              BLOCK_SIZE, BLOCK_SIZE);
+                    g.setColor(Color.BLACK);
+                    g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
                 }
             }
+        }
+    }
+    
+    /**
+     * Gets the color for a given block type
+     */
+    private Color getBlockColor(int blockType) {
+        switch (blockType) {
+            case 1: return Color.CYAN;
+            case 2: return Color.BLUE;
+            case 3: return Color.ORANGE;
+            case 4: return Color.YELLOW;
+            case 5: return Color.GREEN;
+            case 6: return Color.MAGENTA;
+            case 7: return Color.RED;
+            default: return Color.GRAY;
         }
     }
     
@@ -166,109 +128,25 @@ public class GamePanel extends JPanel {
      * Draws the current falling tetromino
      */
     private void drawCurrentTetromino(Graphics g) {
-        Tetromino currentTetromino = board.getCurrentTetromino();
-        if (currentTetromino != null) {
-            int[][] shape = currentTetromino.getShape();
-            Color color = currentTetromino.getColor();
-            
-            g.setColor(color);
-            for (int row = 0; row < shape.length; row++) {
-                for (int col = 0; col < shape[row].length; col++) {
-                    if (shape[row][col] != 0) {
-                        int x = (currentTetromino.getCol() + col) * BLOCK_SIZE;
-                        int y = (currentTetromino.getRow() + row) * BLOCK_SIZE;
-                        g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                        
-                        // Draw block border
-                        g.setColor(Color.DARK_GRAY);
-                        g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                        g.setColor(color);
-                    }
-                }
-            }
-        }
-    }
-    
-    /**
-     * Gets the color for a block based on its type
-     */
-    private Color getBlockColor(int type) {
-        switch(type) {
-            case 1: return Color.CYAN;    // I
-            case 2: return Color.YELLOW;  // O
-            case 3: return Color.MAGENTA; // T
-            case 4: return Color.GREEN;   // S
-            case 5: return Color.RED;     // Z
-            case 6: return Color.BLUE;    // J
-            case 7: return Color.ORANGE;  // L
-            default: return Color.WHITE;
-        }
-    }
-    
-    /**
-     * Draws game information (score, level, etc.) at top-left
-     */
-    private void drawGameInfo(Graphics g) {
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 12));
-        g.drawString("TETRIS", 10, 20);
+        // Get current tetromino from board
+        Tetromino current = board.getCurrentTetromino();
+        if (current == null) return;
         
-        // Draw score and level
-        g.drawString("Score: " + board.getScore(), 10, 40);
-        g.drawString("Level: " + board.getLevel(), 10, 60);
-        g.drawString("Lines: " + board.getLinesCleared(), 10, 80);
-    }
-    
-    /**
-     * Draws the next piece preview in the side panel
-     */
-    private void drawNextPiece(Graphics g) {
-        Tetromino nextTetromino = board.getNextTetromino();
-        if (nextTetromino != null) {
-            // Draw preview panel background (make sure this area is not covered by swing components)
-            g.setColor(new Color(30, 30, 30));
-            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 60);
+        // Draw the tetromino blocks
+        g.setColor(current.getColor());
+        for (int[] pos : current.getShape()) {
+            int x = pos[0] * BLOCK_SIZE;
+            int y = pos[1] * BLOCK_SIZE;
+            g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
             
-            // Draw preview border
-            g.setColor(Color.GRAY);
-            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 60);
-            
-            // Draw next piece label
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 12));
-            g.drawString("Next:", BOARD_WIDTH * BLOCK_SIZE + 15, 115);
-            
-            // Draw next piece centered in preview area
-            int[][] shape = nextTetromino.getShape();
-            Color color = nextTetromino.getColor();
-            
-            // Calculate centering for preview
-            int previewX = BOARD_WIDTH * BLOCK_SIZE + 10;
-            int previewY = 115;
-            
-            // Draw the piece using its shape
-            for (int row = 0; row < shape.length; row++) {
-                for (int col = 0; col < shape[row].length; col++) {
-                    if (shape[row][col] != 0) {
-                        // Adjust coordinates for preview area - ensure it's within bounds
-                        int x = previewX + 30 + col * BLOCK_SIZE;
-                        int y = previewY - 15 + row * BLOCK_SIZE;
-                        
-                        // Draw block
-                        g.setColor(color);
-                        g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                        
-                        // Draw block outline
-                        g.setColor(Color.WHITE);
-                        g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                    }
-                }
-            }
+            // Draw block border
+            g.setColor(Color.BLACK);
+            g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
         }
     }
     
     /**
-     * Draws game over screen
+     * Draws the game over screen
      */
     private void drawGameOver(Graphics g) {
         // Draw semi-transparent overlay
@@ -276,62 +154,27 @@ public class GamePanel extends JPanel {
         g.fillRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
         
         // Draw game over text
-        g.setColor(Color.RED);
-        Font font = new Font("Arial", Font.BOLD, 32);
-        g.setFont(font);
-        g.drawString("GAME OVER", BOARD_WIDTH * BLOCK_SIZE / 2 - 100, BOARD_HEIGHT * BLOCK_SIZE / 2 - 30);
-        
-        // Draw score
         g.setColor(Color.WHITE);
-        font = new Font("Arial", Font.BOLD, 20);
-        g.setFont(font);
-        g.drawString("Score: " + board.getScore(), BOARD_WIDTH * BLOCK_SIZE / 2 - 60, BOARD_HEIGHT * BLOCK_SIZE / 2 + 10);
-        
-        // Draw restart button
-        g.setColor(Color.GREEN);
-        g.drawString("Press [R] to Play Again", BOARD_WIDTH * BLOCK_SIZE / 2 - 100, BOARD_HEIGHT * BLOCK_SIZE / 2 + 50);
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        FontMetrics fm = g.getFontMetrics();
+        String gameOverText = "GAME OVER";
+        int x = (BOARD_WIDTH * BLOCK_SIZE - fm.stringWidth(gameOverText)) / 2;
+        int y = (BOARD_HEIGHT * BLOCK_SIZE + fm.getAscent()) / 2;
+        g.drawString(gameOverText, x, y);
     }
     
     /**
-     * Shows help dialog
+     * Shows the help dialog
      */
     private void showHelpDialog() {
-        String helpText = """
-            ← : Left Move
-            → : Right Move
-            ↓ : Soft Drop  
-            ↑ : Rotate
-            Space : Hard Drop
-            P : Pause
-            R : Restart""";
-        
-        JOptionPane.showMessageDialog(this, helpText, "Controls", JOptionPane.INFORMATION_MESSAGE);
-        // Restore focus to GamePanel after help dialog is closed
-        SwingUtilities.invokeLater(() -> {
-            requestFocusInWindow();
-        });
-    }
-    
-    /**
-     * Restarts the game completely
-     */
-    public void restartGame() {
-        // Stop the game loop and timer
-        gameLoop.stop();
-        gameTimer.stop();
-        
-        // Reset the board completely
-        board.reset();
-        
-        // Restart timers
-        gameTimer.start();
-        gameLoop.start();
-        
-        // Request focus to ensure keyboard input works
-        requestFocusInWindow();
-        
-        // Force repaint to refresh UI
-        repaint();
+        JOptionPane.showMessageDialog(this,
+            "Tetris Game Help:\n" +
+            "- Arrow keys: Move tetromino\n" +
+            "- Space: Hard drop\n" +
+            "- P: Pause game\n" +
+            "- R: Restart game",
+            "Help",
+            JOptionPane.INFORMATION_MESSAGE);
     }
     
     /**
