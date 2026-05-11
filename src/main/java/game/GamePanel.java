@@ -1,8 +1,11 @@
 package game;
 
 import game.constants.GameConstants;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Main game panel that handles rendering and user interaction
@@ -19,7 +22,17 @@ public class GamePanel extends JPanel {
     private final GameLoop gameLoop;
     private JButton helpButton;
     
+    // UI panels for better separation of concerns
+    private final JPanel sidePanel;
+    private final JPanel uiPanel;
+    
     public GamePanel() {
+        // Initialize the game board
+        board = new Board(BOARD_WIDTH, BOARD_HEIGHT);
+        inputHandler = new InputHandler(this, board);
+        gameLoop = new GameLoop(this, board);
+        
+        // Set up the main panel
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(
             BOARD_WIDTH * BLOCK_SIZE + SIDE_PANEL_WIDTH, // Increased space for next piece preview and UI
@@ -29,13 +42,6 @@ public class GamePanel extends JPanel {
         setFocusable(true);
         setOpaque(true);
         
-        // Initialize game components
-        board = new Board();
-        inputHandler = new InputHandler(this);
-        gameLoop = new GameLoop(board);
-        
-        addKeyListener(inputHandler);
-        
         // Initialize game timer for rendering
         gameTimer = new Timer(16, e -> repaint()); // ~60 FPS
         gameTimer.start();
@@ -43,39 +49,50 @@ public class GamePanel extends JPanel {
         // Start the game loop
         gameLoop.start();
         
+        // Create side panel for UI elements
+        sidePanel = new JPanel();
+        sidePanel.setLayout(new BorderLayout());
+        sidePanel.setBackground(new Color(30, 30, 30));
+        sidePanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, BOARD_HEIGHT * BLOCK_SIZE));
+        sidePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        
+        // Create a dedicated panel for game info (score, level, next piece)
+        uiPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                // Draw score and level information
+                drawGameInfo(g);
+                
+                // Draw next piece preview
+                drawNextPiece(g);
+            }
+        };
+        uiPanel.setLayout(new BorderLayout());
+        uiPanel.setBackground(new Color(30, 30, 30));
+        uiPanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, BOARD_HEIGHT * BLOCK_SIZE - 50));
+        uiPanel.setOpaque(false); // Make it transparent to allow underlying rendering
+        
+        // Create bottom panel for help button
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.setBackground(new Color(30, 30, 30));
+        
         // Create and setup help button
         helpButton = new JButton("Help");
         helpButton.addActionListener(e -> showHelpDialog());
         helpButton.setFocusable(false);
         helpButton.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH - 20, 30));
         helpButton.setBackground(Color.DARK_GRAY);
-        helpButton.setForeground(Color.BLACK);
+        helpButton.setForeground(Color.WHITE);
         
-        // Add help button to a side panel at bottom using BorderLayout for proper positioning
-        JPanel sidePanel = new JPanel();
-        sidePanel.setLayout(new BorderLayout());
-        sidePanel.setBackground(new Color(30, 30, 30));
-        sidePanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, BOARD_HEIGHT * BLOCK_SIZE));
-        sidePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        
-        // Create bottom panel for help button
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottomPanel.setBackground(new Color(30, 30, 30));
         bottomPanel.add(helpButton);
         
-        // Add help button panel to the bottom of the side panel
+        // Add panels to side panel
+        sidePanel.add(uiPanel, BorderLayout.CENTER);
         sidePanel.add(bottomPanel, BorderLayout.SOUTH);
         
         // Add side panel to the right side
         add(sidePanel, BorderLayout.EAST);
-        
-        // Set opaque false to prevent conflicts with custom painting
-        setOpaque(true);
-        
-        // Ensure we get focus on startup
-        SwingUtilities.invokeLater(() -> {
-            requestFocusInWindow();
-        });
     }
     
     @Override
@@ -83,7 +100,7 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
         // Clear the panel to avoid residual rendering
         g.clearRect(0, 0, getWidth(), getHeight());
-        // Draw the game board
+        // Draw the game board (excluding UI elements)
         drawBoard(g);
     }
     
