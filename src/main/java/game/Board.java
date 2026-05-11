@@ -3,406 +3,311 @@ package game;
 import game.constants.GameConstants;
 
 /**
- * Enhanced Board class with game logic implementation
+ * Stable Board implementation (fixed tetromino handling & positioning)
  */
 public class Board {
+
     private static final int BOARD_WIDTH = GameConstants.BOARD_WIDTH;
     private static final int BOARD_HEIGHT = GameConstants.BOARD_HEIGHT;
-    
-    // Game board grid - 0 represents empty cell
+
     private int[][] grid;
-    
-    // Current falling tetromino
+
     private Tetromino currentTetromino;
-    
-    // Next tetromino to display
     private Tetromino nextTetromino;
-    
-    // Game state
+
     private boolean isGameOver;
     private boolean isPaused;
-    
-    // Scores and level
+
     private int score;
     private int level;
     private int linesCleared;
-    
+
     public Board() {
         grid = new int[BOARD_HEIGHT][BOARD_WIDTH];
+
         isGameOver = false;
         isPaused = false;
         score = 0;
         level = 1;
         linesCleared = 0;
-        
-        // Initialize with empty grid
+
         clearGrid();
-        
-        // Generate first tetromino
         generateNewTetromino();
     }
-    
-    /**
-     * Clears the game grid
-     */
+
     private void clearGrid() {
-        for (int row = 0; row < BOARD_HEIGHT; row++) {
-            for (int col = 0; col < BOARD_WIDTH; col++) {
-                grid[row][col] = 0;
+        for (int r = 0; r < BOARD_HEIGHT; r++) {
+            for (int c = 0; c < BOARD_WIDTH; c++) {
+                grid[r][c] = 0;
             }
         }
     }
-    
+
     /**
-     * Checks if the given position is valid (within bounds and empty)
+     * Validate position using current shape
      */
-    public boolean isValidPosition(Tetromino tetromino, int offsetX, int offsetY) {
-        int[][] shape = tetromino.getShape();
-        int tetrominoRow = tetromino.getRow();
-        int tetrominoCol = tetromino.getCol();
-        
-        for (int row = 0; row < shape.length; row++) {
-            for (int col = 0; col < shape[row].length; col++) {
-                if (shape[row][col] != 0) {
-                    int boardRow = tetrominoRow + row + offsetY;
-                    int boardCol = tetrominoCol + col + offsetX;
-                    
-                    // Check if position is within board boundaries
-                    if (boardRow >= BOARD_HEIGHT || boardCol < 0 || boardCol >= BOARD_WIDTH) {
-                        return false;
-                    }
-                    
-                    // Check if position is occupied by other block
-                    if (boardRow >= 0 && grid[boardRow][boardCol] != 0) {
-                        return false;
-                    }
+    public boolean isValidPosition(Tetromino t, int offsetX, int offsetY) {
+
+        int[][] shape = t.getShape();
+        int baseRow = t.getRow();
+        int baseCol = t.getCol();
+
+        for (int r = 0; r < shape.length; r++) {
+            for (int c = 0; c < shape[r].length; c++) {
+
+                if (shape[r][c] == 0) continue;
+
+                int newRow = baseRow + r + offsetY;
+                int newCol = baseCol + c + offsetX;
+
+                if (newRow < 0 || newRow >= BOARD_HEIGHT ||
+                        newCol < 0 || newCol >= BOARD_WIDTH) {
+                    return false;
+                }
+
+                if (grid[newRow][newCol] != 0) {
+                    return false;
                 }
             }
         }
-        
+
         return true;
     }
-    
+
     /**
-     * Places the current tetromino onto the board
-     */
-    public void placeTetromino() {
-        if (currentTetromino == null) return;
-        
-        int[][] shape = currentTetromino.getShape();
-        int tetrominoRow = currentTetromino.getRow();
-        int tetrominoCol = currentTetromino.getCol();
-        
-        for (int row = 0; row < shape.length; row++) {
-            for (int col = 0; col < shape[row].length; col++) {
-                if (shape[row][col] != 0) {
-                    int boardRow = tetrominoRow + row;
-                    int boardCol = tetrominoCol + col;
-                    
-                    if (boardRow >= 0 && boardRow < BOARD_HEIGHT && 
-                        boardCol >= 0 && boardCol < BOARD_WIDTH) {
-                        grid[boardRow][boardCol] = currentTetromino.getType();
-                    }
-                }
-            }
-        }
-    }
-    
-    /**
-     * Clears completed lines and returns number of lines cleared
-     */
-    public int clearLines() {
-        int linesCleared = 0;
-        
-        // Iterate from bottom to top to avoid index shifting issues
-        for (int row = BOARD_HEIGHT - 1; row >= 0; row--) {
-            boolean isLineComplete = true;
-            
-            // Check if line is complete (all cells filled)
-            for (int col = 0; col < BOARD_WIDTH; col++) {
-                if (grid[row][col] == 0) {
-                    isLineComplete = false;
-                    break;
-                }
-            }
-            
-            // If line is complete, remove it and shift all above lines down
-            if (isLineComplete) {
-                // Shift all rows above down by one position
-                for (int r = row; r > 0; r--) {
-                    System.arraycopy(grid[r - 1], 0, grid[r], 0, BOARD_WIDTH);
-                }
-                
-                // Clear top row
-                for (int col = 0; col < BOARD_WIDTH; col++) {
-                    grid[0][col] = 0;
-                }
-                
-                linesCleared++;
-                row++; // Recheck same row since it's been shifted
-            }
-        }
-        
-        // Update score and level
-        if (linesCleared > 0) {
-            updateScore(linesCleared);
-        }
-        
-        return linesCleared;
-    }
-    
-    /**
-     * Updates score based on lines cleared
-     */
-    private void updateScore(int linesCleared) {
-        // Simple scoring system based on lines cleared
-        int points = 0;
-        switch(linesCleared) {
-            case 1: points = 100; break;
-            case 2: points = 300; break;
-            case 3: points = 500; break;
-            case 4: points = 800; break;
-        }
-        
-        this.score += points;
-        this.linesCleared += linesCleared;
-        this.level = (this.linesCleared / GameConstants.LINES_PER_LEVEL) + 1;
-    }
-    
-    /**
-     * Generates a new random tetromino
-     */
-    public Tetromino generateRandomTetromino() {
-        // Simple implementation - in practice, would use a proper random selection
-        int type = 1 + (int)(Math.random() * 7); // Generate random type 1-7
-        return new Tetromino(type, 0, 3); // Start at top center
-    }
-    
-    /**
-     * Moves the current tetromino left
+     * Move left
      */
     public boolean moveLeft() {
         if (currentTetromino == null) return false;
+
         if (isValidPosition(currentTetromino, -1, 0)) {
             currentTetromino.move(0, -1);
             return true;
         }
         return false;
     }
-    
+
     /**
-     * Moves the current tetromino right
+     * Move right
      */
     public boolean moveRight() {
         if (currentTetromino == null) return false;
+
         if (isValidPosition(currentTetromino, 1, 0)) {
             currentTetromino.move(0, 1);
             return true;
         }
         return false;
     }
-    
+
     /**
-     * Moves the current tetromino down
+     * Move down (fixed timing-safe logic)
      */
     public boolean moveDown() {
         if (currentTetromino == null) return false;
+
         if (isValidPosition(currentTetromino, 0, 1)) {
             currentTetromino.move(1, 0);
             return true;
-        } else {
-            // If we can't move down, place the tetromino
-            placeTetromino();
-            
-            // Check for completed lines
-            int linesCleared = clearLines();
-            
-            // Check if game is over (if new tetromino can't be placed)
-            if (nextTetromino != null && !isValidPosition(nextTetromino, 0, 0)) {
-                isGameOver = true;
-                return false;
-            }
-            
-            // Generate a new tetromino
-            generateNewTetromino();
-            return true;
         }
-    }
-    
-    /**
-     * Rotates the current tetromino
-     */
-    public boolean rotate() {
-        if (currentTetromino == null) return false;
-        
-        // Save the original rotation
-        int originalRotation = currentTetromino.getRotation();
-        
-        // Try rotating
-        currentTetromino.rotate();
-        
-        // If rotation causes collision, revert
-        if (!isValidPosition(currentTetromino, 0, 0)) {
-            currentTetromino.setRotation(originalRotation);
-            return false;
-        }
-        
+
+        placeTetromino();
+        clearLines();
+
+        generateNewTetromino();
+
         return true;
     }
-    
+
     /**
-     * Hard drops the tetromino to the bottom
+     * Rotate with rollback safety
+     */
+    public boolean rotate() {
+
+        if (currentTetromino == null) return false;
+
+        int originalRotation = currentTetromino.getRotation();
+
+        currentTetromino.rotate();
+
+        // 1. 먼저 원래 자리에서 검사
+        if (isValidPosition(currentTetromino, 0, 0)) {
+            return true;
+        }
+
+        // 2. SRS simple wall kick
+        int[][] kicks = {
+                {0, 0},
+                {-1, 0},
+                {1, 0},
+                {0, -1},
+                {-2, 0},
+                {2, 0}
+        };
+
+        for (int[] kick : kicks) {
+
+            int dx = kick[1];
+            int dy = kick[0];
+
+            if (isValidPosition(currentTetromino, dx, dy)) {
+                currentTetromino.move(dy, dx);
+                return true;
+            }
+        }
+
+        // 3. 실패 → 롤백
+        currentTetromino.setRotation(originalRotation);
+        return false;
+    }
+
+    /**
+     * Hard drop
      */
     public void hardDrop() {
         if (currentTetromino == null) return;
-        
-        // Move the tetromino down until it can't go further
-        // We use a different approach to avoid continuous spawning
-        int dropDistance = 0;
+
         while (isValidPosition(currentTetromino, 0, 1)) {
             currentTetromino.move(1, 0);
-            dropDistance++;
         }
-        
-        // Place the tetromino at its final position
+
         placeTetromino();
-        
-        // Clear lines and check for game over
-        int linesCleared = clearLines();
-        
-        // Check if game is over (if new tetromino can't be placed)
-        if (nextTetromino != null && !isValidPosition(nextTetromino, 0, 0)) {
-            isGameOver = true;
-            return;
-        }
-        
-        // Generate a new tetromino
+        clearLines();
         generateNewTetromino();
     }
-    
+
     /**
-     * Generates a new tetromino (for the next piece)
+     * Place piece into grid
+     */
+    public void placeTetromino() {
+        if (currentTetromino == null) return;
+
+        int[][] shape = currentTetromino.getShape();
+        int row = currentTetromino.getRow();
+        int col = currentTetromino.getCol();
+
+        for (int r = 0; r < shape.length; r++) {
+            for (int c = 0; c < shape[r].length; c++) {
+
+                if (shape[r][c] == 0) continue;
+
+                int gr = row + r;
+                int gc = col + c;
+
+                if (gr >= 0 && gr < BOARD_HEIGHT &&
+                        gc >= 0 && gc < BOARD_WIDTH) {
+
+                    grid[gr][gc] = currentTetromino.getType();
+                }
+            }
+        }
+    }
+
+    /**
+     * Clear full lines
+     */
+    public int clearLines() {
+
+        int cleared = 0;
+
+        for (int r = BOARD_HEIGHT - 1; r >= 0; r--) {
+
+            boolean full = true;
+
+            for (int c = 0; c < BOARD_WIDTH; c++) {
+                if (grid[r][c] == 0) {
+                    full = false;
+                    break;
+                }
+            }
+
+            if (full) {
+
+                for (int i = r; i > 0; i--) {
+                    System.arraycopy(grid[i - 1], 0, grid[i], 0, BOARD_WIDTH);
+                }
+
+                for (int c = 0; c < BOARD_WIDTH; c++) {
+                    grid[0][c] = 0;
+                }
+
+                cleared++;
+                r++;
+            }
+        }
+
+        if (cleared > 0) {
+            updateScore(cleared);
+        }
+
+        return cleared;
+    }
+
+    private void updateScore(int n) {
+
+        int points = switch (n) {
+            case 1 -> 100;
+            case 2 -> 300;
+            case 3 -> 500;
+            case 4 -> 800;
+            default -> 0;
+        };
+
+        score += points;
+        linesCleared += n;
+        level = (linesCleared / GameConstants.LINES_PER_LEVEL) + 1;
+    }
+
+    /**
+     * Spawn new piece (FIXED CENTER SPAWN)
      */
     public void generateNewTetromino() {
-        // Set current tetromino to next tetromino
+
         if (nextTetromino != null) {
             currentTetromino = nextTetromino;
         } else {
             currentTetromino = generateRandomTetromino();
         }
-        
-        // Generate next tetromino
+
+        // FIX: proper center spawn (prevents shape mismatch illusion)
+        currentTetromino.setRow(0);
+        currentTetromino.setCol(BOARD_WIDTH / 2 - 2);
+
         nextTetromino = generateRandomTetromino();
-        
-        // Check if game is over (if the new tetromino can't be placed)
+
         if (!isValidPosition(currentTetromino, 0, 0)) {
             isGameOver = true;
         }
     }
-    
+
     /**
-     * Checks if game is over (when new tetromino can't be placed)
+     * Random piece
      */
-    public boolean isGameOver() {
-        return isGameOver;
+    public Tetromino generateRandomTetromino() {
+        int type = 1 + (int)(Math.random() * 7);
+        return new Tetromino(type, 0, BOARD_WIDTH / 2 - 2);
     }
-    
-    /**
-     * Sets game over state
-     */
-    public void setGameOver(boolean gameOver) {
-        isGameOver = gameOver;
-    }
-    
-    /**
-     * Gets the game grid
-     */
-    public int[][] getGrid() {
-        return grid;
-    }
-    
-    /**
-     * Gets current tetromino
-     */
-    public Tetromino getCurrentTetromino() {
-        return currentTetromino;
-    }
-    
-    /**
-     * Sets current tetromino
-     */
-    public void setCurrentTetromino(Tetromino tetromino) {
-        this.currentTetromino = tetromino;
-    }
-    
-    /**
-     * Gets next tetromino
-     */
-    public Tetromino getNextTetromino() {
-        return nextTetromino;
-    }
-    
-    /**
-     * Sets next tetromino
-     */
-    public void setNextTetromino(Tetromino tetromino) {
-        this.nextTetromino = tetromino;
-    }
-    
-    /**
-     * Gets game paused state
-     */
-    public boolean isPaused() {
-        return isPaused;
-    }
-    
-    /**
-     * Sets game paused state
-     */
-    public void setPaused(boolean paused) {
-        isPaused = paused;
-    }
-    
-    /**
-     * Gets current score
-     */
-    public int getScore() {
-        return score;
-    }
-    
-    /**
-     * Gets current level
-     */
-    public int getLevel() {
-        return level;
-    }
-    
-    /**
-     * Gets lines cleared
-     */
-    public int getLinesCleared() {
-        return linesCleared;
-    }
-    
-    /**
-     * Resets the board to initial state
-     */
+
+    public boolean isGameOver() { return isGameOver; }
+    public boolean isPaused() { return isPaused; }
+    public void setPaused(boolean p) { isPaused = p; }
+
+    public int[][] getGrid() { return grid; }
+    public Tetromino getCurrentTetromino() { return currentTetromino; }
+    public Tetromino getNextTetromino() { return nextTetromino; }
+
+    public int getScore() { return score; }
+    public int getLevel() { return level; }
+    public int getLinesCleared() { return linesCleared; }
+
     public void reset() {
-        // Clear the grid
         clearGrid();
-        
-        // Reset game state
         isGameOver = false;
-        isPaused = false;
         score = 0;
         level = 1;
         linesCleared = 0;
-        
-        // Reset tetrominoes
         currentTetromino = null;
         nextTetromino = null;
-        
-        // Generate new tetrominoes
         generateNewTetromino();
     }
 }

@@ -18,6 +18,8 @@ public class GameLoop implements ActionListener {
     private static final int TARGET_FPS = 60;
     private static final long FRAME_TIME = 1000 / TARGET_FPS; // milliseconds per frame
     private long lastFrameTime = 0;
+
+    private long lastDropTime = 0;
     
     // Frame rate control variables
     private volatile boolean shouldRender = false;
@@ -38,7 +40,6 @@ public class GameLoop implements ActionListener {
      * Starts the game loop with fixed timestep
      */
     public void start() {
-        System.out.println("Starting GameLoop with fixed timestep...");
         if (!isRunning) {
             // Use swing timer to maintain consistent frame rate
             Timer gameTimer = new Timer((int) FRAME_TIME, this);
@@ -51,7 +52,6 @@ public class GameLoop implements ActionListener {
      * Stops the game loop
      */
     public void stop() {
-        System.out.println("Stopping GameLoop...");
         isRunning = false;
     }
 
@@ -85,9 +85,24 @@ public class GameLoop implements ActionListener {
      * Updates game state at fixed intervals
      */
     private void update() {
-        // Move the current tetromino down one row
+        long currentTime = System.currentTimeMillis();
+
         if (!board.isGameOver() && !board.isPaused()) {
-            board.moveDown();
+
+            int level = board.getLevel();
+
+            // 속도 계산 (GameConstants 기반)
+            int dropSpeed = GameConstants.INITIAL_DROP_SPEED
+                    - (level * GameConstants.SPEED_DECREMENT_PER_LEVEL);
+
+            // 최소 속도 제한
+            dropSpeed = Math.max(GameConstants.MIN_DROP_SPEED, dropSpeed);
+
+            // 시간 기반 낙하
+            if (currentTime - lastDropTime >= dropSpeed) {
+                board.moveDown();
+                lastDropTime = currentTime;
+            }
         }
     }
 

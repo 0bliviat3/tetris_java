@@ -1,15 +1,15 @@
 package game;
 
-import game.constants.GameConstants;
-
 import java.awt.*;
-import java.util.Arrays;
 
 /**
- * Represents a Tetromino (game block) with its shape, color, and position
+ * SRS-ready Tetromino
+ * - uses base shape only
+ * - rotation handled mathematically
  */
 public class Tetromino {
-    // Tetromino types
+
+    // Types
     public static final int TYPE_I = 1;
     public static final int TYPE_O = 2;
     public static final int TYPE_T = 3;
@@ -17,217 +17,149 @@ public class Tetromino {
     public static final int TYPE_Z = 5;
     public static final int TYPE_J = 6;
     public static final int TYPE_L = 7;
-    
-    // Shape definitions for each tetromino type
+
+    /**
+     * Base shapes (0° only)
+     */
     private static final int[][][] SHAPES = {
-        // I shape
-        {
-            {0, 0, 0, 0},
-            {1, 1, 1, 1},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0}
-        },
-        // O shape
-        {
-            {1, 1},
-            {1, 1}
-        },
-        // T shape
-        {
-            {0, 1, 0},
-            {1, 1, 1},
-            {0, 0, 0}
-        },
-        // S shape
-        {
-            {0, 1, 1},
-            {1, 1, 0},
-            {0, 0, 0}
-        },
-        // Z shape
-        {
-            {1, 1, 0},
-            {0, 1, 1},
-            {0, 0, 0}
-        },
-        // J shape
-        {
-            {1, 0, 0},
-            {1, 1, 1},
-            {0, 0, 0}
-        },
-        // L shape
-        {
-            {0, 0, 1},
-            {1, 1, 1},
-            {0, 0, 0}
-        }
+            // I
+            {{0,0,0,0},
+                    {1,1,1,1},
+                    {0,0,0,0},
+                    {0,0,0,0}},
+
+            // O
+            {{1,1},
+                    {1,1}},
+
+            // T
+            {{0,1,0},
+                    {1,1,1},
+                    {0,0,0}},
+
+            // S
+            {{0,1,1},
+                    {1,1,0},
+                    {0,0,0}},
+
+            // Z
+            {{1,1,0},
+                    {0,1,1},
+                    {0,0,0}},
+
+            // J
+            {{1,0,0},
+                    {1,1,1},
+                    {0,0,0}},
+
+            // L
+            {{0,0,1},
+                    {1,1,1},
+                    {0,0,0}}
     };
-    
-    // Rotated shapes for each tetromino type (for 4 rotations)
-    private static final int[][][][] ROTATED_SHAPES = {
-        // I shape rotations
-        {
-            {{0, 0, 0, 0}, {1, 1, 1, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}},  // 0°
-            {{0, 0, 1, 0}, {0, 0, 1, 0}, {0, 0, 1, 0}, {0, 0, 1, 0}},  // 90°
-            {{0, 0, 0, 0}, {0, 0, 0, 0}, {1, 1, 1, 1}, {0, 0, 0, 0}},  // 180°
-            {{0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}}   // 270°
-        },
-        // O shape - same in all rotations
-        {
-            {{1, 1}, {1, 1}},  // All rotations the same
-            {{1, 1}, {1, 1}},
-            {{1, 1}, {1, 1}},
-            {{1, 1}, {1, 1}}
-        },
-        // T shape rotations
-        {
-            {{0, 1, 0}, {1, 1, 1}, {0, 0, 0}},  // 0°
-            {{0, 1, 0}, {0, 1, 1}, {0, 1, 0}},  // 90°
-            {{0, 0, 0}, {1, 1, 1}, {0, 1, 0}},  // 180°
-            {{0, 1, 0}, {1, 1, 0}, {0, 1, 0}}   // 270°
-        },
-        // S shape rotations
-        {
-            {{0, 1, 1}, {1, 1, 0}, {0, 0, 0}},  // 0°
-            {{0, 1, 0}, {0, 1, 1}, {0, 0, 1}},  // 90°
-            {{0, 0, 0}, {0, 1, 1}, {1, 1, 0}},  // 180°
-            {{1, 0, 0}, {1, 1, 0}, {0, 1, 0}}   // 270°
-        },
-        // Z shape rotations
-        {
-            {{1, 1, 0}, {0, 1, 1}, {0, 0, 0}},  // 0°
-            {{0, 0, 1}, {0, 1, 1}, {0, 1, 0}},  // 90°
-            {{0, 0, 0}, {1, 1, 0}, {1, 1, 0}},  // 180°
-            {{0, 1, 0}, {1, 1, 0}, {1, 0, 0}}   // 270°
-        },
-        // J shape rotations
-        {
-            {{1, 0, 0}, {1, 1, 1}, {0, 0, 0}},  // 0°
-            {{0, 1, 1}, {0, 1, 0}, {0, 1, 0}},  // 90°
-            {{0, 0, 0}, {1, 1, 1}, {0, 0, 1}},  // 180°
-            {{0, 1, 0}, {0, 1, 0}, {1, 1, 0}}   // 270°
-        },
-        // L shape rotations
-        {
-            {{0, 0, 1}, {1, 1, 1}, {0, 0, 0}},  // 0°
-            {{0, 1, 0}, {0, 1, 0}, {0, 1, 1}},  // 90°
-            {{0, 0, 0}, {1, 1, 1}, {1, 0, 0}},  // 180°
-            {{1, 1, 0}, {1, 0, 0}, {1, 0, 0}}   // 270°
-        }
-    };
-    
-    // Colors for each tetromino type
+
+    /**
+     * Colors
+     */
     private static final Color[] COLORS = {
-        Color.BLACK,   // Placeholder for index 0
-        Color.CYAN,    // I
-        Color.YELLOW,  // O
-        Color.MAGENTA, // T
-        Color.GREEN,   // S
-        Color.RED,     // Z
-        Color.BLUE,    // J
-        Color.ORANGE   // L
+            Color.BLACK,
+            Color.CYAN,
+            Color.YELLOW,
+            Color.MAGENTA,
+            Color.GREEN,
+            Color.RED,
+            Color.BLUE,
+            Color.ORANGE
     };
-    
-    private int[][] shape;
+
+    private int type;
     private int row;
     private int col;
-    private int type;
     private int rotation;
-    
+
     public Tetromino() {
-        // For now, create a default tetromino
-        this.type = TYPE_I;  // Default to I piece
-        this.shape = SHAPES[TYPE_I - 1];  // Adjust for 0-based indexing
-        this.row = 0;
-        this.col = 3;  // Start near center
-        this.rotation = 0;
+        this(TYPE_I, 0, 3);
     }
-    
+
     public Tetromino(int type, int row, int col) {
         this.type = type;
-        this.shape = SHAPES[type - 1];  // Adjust for 0-based indexing
         this.row = row;
         this.col = col;
         this.rotation = 0;
     }
-    
+
     /**
-     * Gets the current shape of the tetromino (accounting for rotation)
+     * SRS-style rotation (computed at runtime)
      */
     public int[][] getShape() {
-        // Return rotated shape based on rotation state
-        return ROTATED_SHAPES[type - 1][rotation % 4];
+        int[][] shape = SHAPES[type - 1];
+
+        int[][] result = shape;
+
+        for (int i = 0; i < rotation; i++) {
+            result = rotateCW(result);
+        }
+
+        return result;
     }
-    
+
     /**
-     * Gets the type of this tetromino
+     * 90-degree clockwise rotation
      */
-    public int getType() {
-        return type;
+    private int[][] rotateCW(int[][] shape) {
+
+        int h = shape.length;
+        int w = shape[0].length;
+
+        int[][] result = new int[w][h];
+
+        for (int r = 0; r < h; r++) {
+            for (int c = 0; c < w; c++) {
+                result[c][h - 1 - r] = shape[r][c];
+            }
+        }
+
+        return result;
     }
-    
-    /**
-     * Gets the row position
-     */
-    public int getRow() {
-        return row;
-    }
-    
-    /**
-     * Sets the row position
-     */
-    public void setRow(int row) {
-        this.row = row;
-    }
-    
-    /**
-     * Gets the column position
-     */
-    public int getCol() {
-        return col;
-    }
-    
-    /**
-     * Sets the column position
-     */
-    public void setCol(int col) {
-        this.col = col;
-    }
-    
-    /**
-     * Gets the color of this tetromino
-     */
-    public Color getColor() {
-        return COLORS[type];
-    }
-    
-    /**
-     * Rotates the tetromino 90 degrees clockwise
-     */
+
     public void rotate() {
-        this.rotation = (this.rotation + 1) % 4;
+        rotation = (rotation + 1) % 4;
     }
-    
-    /**
-     * Gets the rotation state of this tetromino
-     */
+
     public int getRotation() {
         return rotation;
     }
-    
-    /**
-     * Sets the rotation state of this tetromino
-     */
+
     public void setRotation(int rotation) {
-        this.rotation = rotation;
+        this.rotation = ((rotation % 4) + 4) % 4;
     }
-    
-    /**
-     * Moves the tetromino by the given offset
-     */
-    public void move(int rowOffset, int colOffset) {
-        this.row += rowOffset;
-        this.col += colOffset;
+
+    public int getType() {
+        return type;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+    }
+
+    public int getCol() {
+        return col;
+    }
+
+    public void setCol(int col) {
+        this.col = col;
+    }
+
+    public Color getColor() {
+        return COLORS[type];
+    }
+
+    public void move(int dr, int dc) {
+        this.row += dr;
+        this.col += dc;
     }
 }
