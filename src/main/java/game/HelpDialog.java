@@ -2,13 +2,15 @@ package game;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 
 public class HelpDialog extends JDialog {
     
+    private JFrame parent;
+    
     public HelpDialog(JFrame parent) {
         super(parent, "Game Controls Help", true); // true = modal
+        this.parent = parent;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(400, 300);
         setLocationRelativeTo(parent);
@@ -21,7 +23,7 @@ public class HelpDialog extends JDialog {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    dispose();
+                    closeDialog();
                 }
             }
             
@@ -35,6 +37,43 @@ public class HelpDialog extends JDialog {
         // Make dialog focusable
         setFocusable(true);
         requestFocusInWindow();
+        
+        // Add window listener to restore focus when dialog closes
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                // Restore focus to the main game panel
+                if (parent != null) {
+                    // Find the GamePanel and give it focus
+                    Component[] components = parent.getContentPane().getComponents();
+                    for (Component comp : components) {
+                        if (comp instanceof GamePanel) {
+                            ((GamePanel) comp).requestFocusInWindow();
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    /**
+     * Closes the dialog and restores focus to game panel
+     */
+    private void closeDialog() {
+        dispose();
+        // Ensure game panel gets focus back
+        if (parent != null) {
+            Component[] components = parent.getContentPane().getComponents();
+            for (Component comp : components) {
+                if (comp instanceof GamePanel) {
+                    SwingUtilities.invokeLater(() -> {
+                        ((GamePanel) comp).requestFocusInWindow();
+                    });
+                    break;
+                }
+            }
+        }
     }
     
     /**
@@ -81,7 +120,7 @@ public class HelpDialog extends JDialog {
         // Close button
         JButton closeButton = new JButton("Close");
         closeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        closeButton.addActionListener(e -> dispose());
+        closeButton.addActionListener(e -> closeDialog());
         contentPanel.add(closeButton);
         
         add(contentPanel, BorderLayout.CENTER);
