@@ -1,10 +1,8 @@
 package game;
 
-import game.Board;
 import game.constants.GameConstants;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
 /**
  * Main game panel that handles rendering and user interaction
@@ -51,7 +49,7 @@ public class GamePanel extends JPanel {
         helpButton.setFocusable(false);
         helpButton.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH - 20, 30));
         helpButton.setBackground(Color.DARK_GRAY);
-        helpButton.setForeground(Color.WHITE);
+        helpButton.setForeground(Color.BLACK);
         
         // Add help button to a side panel at bottom using BorderLayout for proper positioning
         JPanel sidePanel = new JPanel();
@@ -71,7 +69,7 @@ public class GamePanel extends JPanel {
         // Add side panel to the right side
         add(sidePanel, BorderLayout.EAST);
         
-        // Set opaque to false to prevent conflicts with custom painting
+        // Set opaque false to prevent conflicts with custom painting
         setOpaque(true);
         
         // Ensure we get focus on startup
@@ -247,10 +245,6 @@ public class GamePanel extends JPanel {
                         g.setColor(Color.WHITE);
                         g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
                     }
-                }
-            }
-        }
-    }
                 }
             }
         }
