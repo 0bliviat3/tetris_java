@@ -28,6 +28,7 @@ public class GamePanel extends JPanel {
         board = new Board();
         inputHandler = new InputHandler(this);
         gameLoop = new GameLoop(board);
+        gameLoop.setGamePanel(this); // Set reference for repaint notifications
         
         // Set up the main panel
         setLayout(new BorderLayout());

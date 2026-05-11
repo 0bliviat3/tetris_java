@@ -13,6 +13,7 @@ public class GameLoop implements ActionListener {
     private final Timer gameTimer;
     private boolean isRunning;
     private final Board board;
+    private GamePanel gamePanel;
     private static final int DEFAULT_GAME_SPEED = 800; // milliseconds
     
     public GameLoop(Board board) {
@@ -20,6 +21,13 @@ public class GameLoop implements ActionListener {
         this.gameTimer = new Timer(DEFAULT_GAME_SPEED, this);
         this.isRunning = false;
         System.out.println("GameLoop created with timer: " + gameTimer);
+    }
+    
+    /**
+     * Sets the GamePanel reference for repaint notifications
+     */
+    public void setGamePanel(GamePanel gamePanel) {
+        this.gamePanel = gamePanel;
     }
     
     /**
@@ -62,6 +70,10 @@ public class GameLoop implements ActionListener {
         // Move the current tetromino down one row
         if (!board.isGameOver() && !board.isPaused()) {
             board.moveDown();
+            // Trigger repaint after update
+            if (gamePanel != null) {
+                gamePanel.repaint(); // Explicitly trigger repaint
+            }
         }
     }
     
