@@ -20,6 +20,7 @@ public class GamePanel extends JPanel {
     private final InputHandler inputHandler;
     private final Board board;
     private final GameLoop gameLoop;
+    private SidePanel sidePanel;
     
     public GamePanel() {
         // Initialize the game board
@@ -37,6 +38,17 @@ public class GamePanel extends JPanel {
         setFocusable(true);
         setOpaque(true);
         
+        // Add focus listener to ensure GamePanel gets focus
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                // Ensure GamePanel gets focus when needed
+                if (!GamePanel.this.hasFocus()) {
+                    GamePanel.this.requestFocusInWindow();
+                }
+            }
+        });
+        
         // Initialize game timer for rendering
         gameTimer = new Timer(16, e -> repaint()); // ~60 FPS
         gameTimer.start();
@@ -45,8 +57,11 @@ public class GamePanel extends JPanel {
         gameLoop.start();
         
         // Create dedicated side panel for UI elements
-        SidePanel sidePanel = new SidePanel(board);
+        sidePanel = new SidePanel(board);
         add(sidePanel, BorderLayout.EAST);
+        
+        // Add key bindings and ensure proper focus
+        setFocusTraversalKeysEnabled(false);
     }
     
     @Override
@@ -134,9 +149,11 @@ public class GamePanel extends JPanel {
         
         // Draw the tetromino blocks
         g.setColor(current.getColor());
+        int tetrominoRow = current.getRow();
+        int tetrominoCol = current.getCol();
         for (int[] pos : current.getShape()) {
-            int x = pos[0] * BLOCK_SIZE;
-            int y = pos[1] * BLOCK_SIZE;
+            int x = (pos[1] + tetrominoCol) * BLOCK_SIZE;
+            int y = (pos[0] + tetrominoRow) * BLOCK_SIZE;
             g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
             
             // Draw block border
