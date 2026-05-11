@@ -29,6 +29,7 @@ public class GamePanel extends JPanel {
         ));
         setBackground(new Color(30, 30, 30)); // Darker background
         setFocusable(true);
+        setOpaque(true);
         
         // Initialize game components
         board = new Board();
@@ -50,25 +51,28 @@ public class GamePanel extends JPanel {
         helpButton.setFocusable(false);
         helpButton.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH - 20, 30));
         helpButton.setBackground(Color.DARK_GRAY);
-        helpButton.setForeground(Color.BLACK);
+        helpButton.setForeground(Color.WHITE);
         
-        // Add help button to a side panel at bottom
+        // Add help button to a side panel at bottom using BorderLayout for proper positioning
         JPanel sidePanel = new JPanel();
-        sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
+        sidePanel.setLayout(new BorderLayout());
         sidePanel.setBackground(new Color(30, 30, 30));
         sidePanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, BOARD_HEIGHT * BLOCK_SIZE));
         sidePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         
         // Create bottom panel for help button
-        JPanel bottomPanel = new JPanel();
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottomPanel.setBackground(new Color(30, 30, 30));
         bottomPanel.add(helpButton);
         
-        sidePanel.add(Box.createVerticalGlue());
-        sidePanel.add(bottomPanel);
+        // Add help button panel to the bottom of the side panel
+        sidePanel.add(bottomPanel, BorderLayout.SOUTH);
         
         // Add side panel to the right side
         add(sidePanel, BorderLayout.EAST);
+        
+        // Set opaque to false to prevent conflicts with custom painting
+        setOpaque(true);
         
         // Ensure we get focus on startup
         SwingUtilities.invokeLater(() -> {
@@ -206,13 +210,13 @@ public class GamePanel extends JPanel {
     private void drawNextPiece(Graphics g) {
         Tetromino nextTetromino = board.getNextTetromino();
         if (nextTetromino != null) {
-            // Draw preview panel background
+            // Draw preview panel background (make sure this area is not covered by swing components)
             g.setColor(new Color(30, 30, 30));
-            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 140);
+            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 60);
             
             // Draw preview border
             g.setColor(Color.GRAY);
-            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 140);
+            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 60);
             
             // Draw next piece label
             g.setColor(Color.WHITE);
@@ -231,7 +235,7 @@ public class GamePanel extends JPanel {
             for (int row = 0; row < shape.length; row++) {
                 for (int col = 0; col < shape[row].length; col++) {
                     if (shape[row][col] != 0) {
-                        // Adjust coordinates for preview area
+                        // Adjust coordinates for preview area - ensure it's within bounds
                         int x = previewX + 30 + col * BLOCK_SIZE;
                         int y = previewY - 15 + row * BLOCK_SIZE;
                         
@@ -243,6 +247,10 @@ public class GamePanel extends JPanel {
                         g.setColor(Color.WHITE);
                         g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
                     }
+                }
+            }
+        }
+    }
                 }
             }
         }
