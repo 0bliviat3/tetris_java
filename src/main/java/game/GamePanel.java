@@ -24,8 +24,8 @@ public class GamePanel extends JPanel {
     public GamePanel() {
         // Initialize the game board
         board = new Board();
-        inputHandler = new InputHandler(this, board);
-        gameLoop = new GameLoop(this, board);
+        inputHandler = new InputHandler(this);
+        gameLoop = new GameLoop(board);
         
         // Set up the main panel
         setLayout(new BorderLayout());
