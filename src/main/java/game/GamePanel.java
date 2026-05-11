@@ -4,6 +4,7 @@ import game.constants.GameConstants;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static game.constants.GameConstants.PANEL_WIDTH;
 
@@ -16,6 +17,14 @@ public class GamePanel extends JPanel {
     private GameLoop gameLoop;
     private SidePanel sidePanel;
     
+    // Double buffering for improved rendering
+    private BufferedImage doubleBuffer;
+    private Graphics2D bufferGraphics;
+    
+    // Fixed timestep variables
+    private static final int TARGET_FPS = 60;
+    private static final long FRAME_TIME = 1000 / TARGET_FPS; // milliseconds per frame
+    
     public GamePanel(Board board) {
         this.board = board;
         
@@ -23,7 +32,7 @@ public class GamePanel extends JPanel {
         this.gameLoop = new GameLoop(board);
         
         // Enable double buffering for smoother rendering
-        setDoubleBuffered(true);
+        setDoubleBuffered(false); // We'll handle it manually for better control
         
         // Set layout manager to BorderLayout
         setLayout(new BorderLayout());
@@ -45,13 +54,49 @@ public class GamePanel extends JPanel {
         // Enable focus for keyboard input
         setFocusable(true);
         requestFocusInWindow();
+        
+        // Initialize double buffering
+        initializeDoubleBuffer();
+    }
+    
+    /**
+     * Initialize double buffering with BufferedImage
+     */
+    private void initializeDoubleBuffer() {
+        doubleBuffer = new BufferedImage(
+            BOARD_WIDTH * BLOCK_SIZE, 
+            BOARD_HEIGHT * BLOCK_SIZE, 
+            BufferedImage.TYPE_INT_ARGB
+        );
+        bufferGraphics = doubleBuffer.createGraphics();
+        bufferGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        bufferGraphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
     }
     
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        drawBoard(g);
+        
+        // Render to double buffer first
+        renderToBuffer();
+        
+        // Draw double buffer to screen
+        g.drawImage(doubleBuffer, 0, 0, null);
+    }
+    
+    /**
+     * Renders everything to the double buffer
+     */
+    private void renderToBuffer() {
+        // Clear buffer with transparent background
+        bufferGraphics.setComposite(AlphaComposite.Clear);
+        bufferGraphics.fillRect(0, 0, doubleBuffer.getWidth(), doubleBuffer.getHeight());
+        bufferGraphics.setComposite(AlphaComposite.Src);
+        
+        // Draw scene to buffer
+        drawBoard(bufferGraphics);
+        
+        // Apply any additional effects here (anti-aliasing, filters, etc.)
     }
     
     /**
