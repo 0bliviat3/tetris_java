@@ -18,7 +18,6 @@ public class GamePanel extends JPanel {
     private static final int BLOCK_SIZE = GameConstants.BLOCK_SIZE;
     private static final int SIDE_PANEL_WIDTH = 180; // Increased from 150 to better accommodate all UI elements
     
-    private final Timer gameTimer;
     private final InputHandler inputHandler;
     private final Board board;
     private final GameLoop gameLoop;
@@ -236,9 +235,6 @@ private void drawCurrentTetromino(Graphics g) {
      * Starts the game loop
      */
     public void startGame() {
-        if (!gameTimer.isRunning()) {
-            gameTimer.start();
-        }
         gameLoop.start();
     }
     
@@ -246,9 +242,6 @@ private void drawCurrentTetromino(Graphics g) {
      * Stops the game loop
      */
     public void stopGame() {
-        if (gameTimer.isRunning()) {
-            gameTimer.stop();
-        }
         gameLoop.stop();
     }
     
