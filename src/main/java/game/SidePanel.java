@@ -2,6 +2,9 @@ package game;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import game.Board;
 import game.Tetromino;
 
@@ -11,6 +14,7 @@ import static game.constants.GameConstants.PANEL_WIDTH;
 public class SidePanel extends JPanel {
     
     private Board board;
+    private JButton helpButton;
     
     public SidePanel(Board board) {
         this.board = board;
@@ -20,6 +24,37 @@ public class SidePanel extends JPanel {
         
         // Set background color
         setBackground(new Color(30, 30, 30));
+        
+        // Initialize help button
+        initializeHelpButton();
+    }
+    
+    /**
+     * Initializes the help button
+     */
+    private void initializeHelpButton() {
+        helpButton = new JButton("Help");
+        helpButton.setPreferredSize(new Dimension(80, 30));
+        helpButton.setToolTipText("Show Controls Help");
+        helpButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showHelpPopup();
+            }
+        });
+        
+        // Add help button to panel
+        setLayout(new BorderLayout());
+        add(helpButton, BorderLayout.SOUTH);
+    }
+    
+    /**
+     * Shows the help popup with game controls
+     */
+    private void showHelpPopup() {
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        HelpDialog helpDialog = new HelpDialog(parentFrame);
+        helpDialog.setVisible(true);
     }
     
     @Override
