@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * Manages the game loop using Swing Timer
+ * Manages the game loop using Swing Timer with improved rendering
  */
 public class GameLoop implements ActionListener {
     private final Timer gameTimer;
@@ -68,7 +68,10 @@ public class GameLoop implements ActionListener {
             board.moveDown();
             // Trigger repaint after update
             if (gamePanel != null) {
-                gamePanel.repaint(); // Explicitly trigger repaint
+                // Use SwingUtilities.invokeLater to ensure thread safety
+                SwingUtilities.invokeLater(() -> {
+                    gamePanel.repaint(); // Explicitly trigger repaint
+                });
             }
         }
     }

@@ -53,7 +53,8 @@ public class SidePanel extends JPanel {
      */
     private void showHelpPopup() {
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        HelpDialog helpDialog = new HelpDialog(parentFrame);
+        GamePanel gamePanel = (GamePanel) SwingUtilities.getAncestorOfClass(GamePanel.class, this);
+        HelpDialog helpDialog = new HelpDialog(parentFrame, gamePanel);
         helpDialog.setVisible(true);
     }
     

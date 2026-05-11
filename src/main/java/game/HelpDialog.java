@@ -3,14 +3,18 @@ package game;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HelpDialog extends JDialog {
     
     private JFrame parent;
+    private GamePanel gamePanel;
     
-    public HelpDialog(JFrame parent) {
+    public HelpDialog(JFrame parent, GamePanel gamePanel) {
         super(parent, "Game Controls Help", true); // true = modal
         this.parent = parent;
+        this.gamePanel = gamePanel;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(400, 300);
         setLocationRelativeTo(parent);
@@ -25,6 +29,97 @@ public class HelpDialog extends JDialog {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     closeDialog();
                 }
+            }
+            
+            @Override
+            public void keyTyped(KeyEvent e) {}
+            
+            @Override
+            public void keyReleased(KeyEvent e) {}
+        });
+        
+        // Make dialog focusable
+        setFocusable(true);
+        requestFocusInWindow();
+        
+        // Add window listener to restore focus when dialog closes
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                // Restore focus to the main game panel
+                if (gamePanel != null) {
+                    gamePanel.requestFocusInWindow();
+                }
+            }
+        });
+    }
+    
+    /**
+     * Closes the dialog and restores focus to game panel
+     */
+    private void closeDialog() {
+        dispose();
+        // Ensure game panel gets focus back
+        if (gamePanel != null) {
+            SwingUtilities.invokeLater(() -> {
+                gamePanel.requestFocusInWindow();
+            });
+        }
+    }
+    
+    /**
+     * Sets up the help content with game controls
+     */
+    private void setupHelpContent() {
+        setLayout(new BorderLayout());
+        
+        // Create main panel for content
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        contentPanel.setBackground(new Color(30, 30, 30));
+        
+        // Title
+        JLabel titleLabel = new JLabel("Game Controls");
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        contentPanel.add(titleLabel);
+        contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
+        // Controls list
+        String[] controls = {
+            "Move Left:   ← Arrow Key",
+            "Move Right:  → Arrow Key", 
+            "Move Down:   ↓ Arrow Key",
+            "Rotate:      ↑ Arrow Key",
+            "Hard Drop:   Spacebar",
+            "Pause Game:  P Key",
+            "Close Help:  ESC Key"
+        };
+        
+        for (String control : controls) {
+            JLabel controlLabel = new JLabel(control);
+            controlLabel.setForeground(Color.LIGHT_GRAY);
+            controlLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+            controlLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contentPanel.add(controlLabel);
+        }
+        
+        contentPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        
+        // Close button
+        JButton closeButton = new JButton("Close");
+        closeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        closeButton.addActionListener(e -> closeDialog());
+        contentPanel.add(closeButton);
+        
+        add(contentPanel, BorderLayout.CENTER);
+        
+        // Add a small padding at the bottom
+        add(Box.createVerticalStrut(10), BorderLayout.SOUTH);
+    }
+}
             }
             
             @Override
