@@ -5,10 +5,10 @@ import java.awt.*;
 import game.Board;
 import game.Tetromino;
 
+import static game.constants.GameConstants.PANEL_HEIGHT;
+import static game.constants.GameConstants.PANEL_WIDTH;
+
 public class SidePanel extends JPanel {
-    private static final int PANEL_WIDTH = 120;
-    private static final int PANEL_HEIGHT = 200;
-    private static final int BLOCK_SIZE = 20;
     
     private Board board;
     
@@ -69,15 +69,6 @@ public class SidePanel extends JPanel {
         g.setColor(new Color(50, 50, 50));
         g.fillRect(previewX - 2, previewY - 2, 100, 100);
         
-        // Draw preview grid lines
-        g.setColor(new Color(70, 70, 70));
-        for (int x = 0; x <= 4; x++) {
-            g.drawLine(previewX + x * 20, previewY, previewX + x * 20, previewY + 80);
-        }
-        for (int y = 0; y <= 4; y++) {
-            g.drawLine(previewX, previewY + y * 20, previewX + 80, previewY + y * 20);
-        }
-        
         // Get the shape of the next piece
         int[][] shape = nextPiece.getShape();
         
@@ -93,12 +84,12 @@ public class SidePanel extends JPanel {
         // Calculate center offset for perfect centering
         int shapePixelWidth = shapeWidth * 20;
         int shapePixelHeight = shapeHeight * 20;
-        int offsetX = (80 - shapePixelWidth) / 2;
-        int offsetY = (80 - shapePixelHeight) / 2;
+        int offsetX = (100 - shapePixelWidth) / 2;
+        int offsetY = (100 - shapePixelHeight) / 2;
         
         // Draw the preview tetromino blocks with proper alignment
-        Color originalColor = g.getColor();
-        g.setColor(nextPiece.getColor());
+        Color pieceColor = nextPiece.getColor();
+        g.setColor(pieceColor);
         
         // Draw each block in the shape
         for (int row = 0; row < shape.length; row++) {
@@ -113,9 +104,9 @@ public class SidePanel extends JPanel {
                     g.drawRect(x, y, 20, 20);
                     
                     // Restore original color
-                    g.setColor(originalColor);
-}
+                    g.setColor(pieceColor);
+                }
+            }
         }
     }
-}
 }

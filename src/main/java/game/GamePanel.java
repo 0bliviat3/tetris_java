@@ -4,7 +4,8 @@ import game.constants.GameConstants;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
+
+import static game.constants.GameConstants.PANEL_WIDTH;
 
 public class GamePanel extends JPanel {
     private static final int BOARD_WIDTH = GameConstants.BOARD_WIDTH;
@@ -32,7 +33,10 @@ public class GamePanel extends JPanel {
         add(sidePanel, BorderLayout.EAST);
         
         // Setup panel properties
-        setPreferredSize(new Dimension(BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE));
+        setPreferredSize(new Dimension(
+                BOARD_WIDTH * BLOCK_SIZE + PANEL_WIDTH,
+                BOARD_HEIGHT * BLOCK_SIZE
+        ));
         setBackground(Color.BLACK);
         
         // Setup input handling
@@ -44,21 +48,15 @@ public class GamePanel extends JPanel {
     
     @Override
     protected void paintComponent(Graphics g) {
-        System.out.println("paintComponent called");
         super.paintComponent(g);
-        
-        // Draw placed blocks
-        drawPlacedBlocks(g);
-        
-        // Draw current tetromino
-        drawCurrentTetromino(g);
+
+        drawBoard(g);
     }
     
     /**
      * Draws the game board and all elements
      */
     private void drawBoard(Graphics g) {
-        System.out.println("Drawing board");
         // Draw dark background
         g.setColor(new Color(30, 30, 30));
         g.fillRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
@@ -102,34 +100,28 @@ public class GamePanel extends JPanel {
      * Draws the current falling tetromino
      */
     private void drawCurrentTetromino(Graphics g) {
-        System.out.println("drawCurrentTetromino called");
         Tetromino current = board.getCurrentTetromino();
         if (current == null) {
             return;
         }
         
         int[][] shape = current.getShape();
-        System.out.println("Current tetromino shape:");
-        for (int[] row : shape) {
-            System.out.println(Arrays.toString(row));
-        }
-        
-        g.setColor(current.getColor());
+
+        Color color = getColorForBlock(current.getType());
+        g.setColor(color);
         int tetrominoRow = current.getRow();
         int tetrominoCol = current.getCol();
-        System.out.println("Drawing tetromino blocks - row: " + tetrominoRow + ", col: " + tetrominoCol);
         
         for (int row = 0; row < shape.length; row++) {
             for (int col = 0; col < shape[row].length; col++) {
                 if (shape[row][col] != 0) {
                     int x = (col + tetrominoCol) * BLOCK_SIZE;
                     int y = (row + tetrominoRow) * BLOCK_SIZE;
-                    System.out.println("Drawing block at x: " + x + ", y: " + y);
                     g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
                     
                     g.setColor(Color.BLACK);
                     g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                    g.setColor(current.getColor());
+                    g.setColor(color);
                 }
             }
         }

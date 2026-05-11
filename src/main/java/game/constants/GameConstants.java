@@ -7,6 +7,9 @@ public class GameConstants {
     // Board dimensions
     public static final int BOARD_WIDTH = 10;
     public static final int BOARD_HEIGHT = 20;
+
+    public static final int PANEL_WIDTH = 120;
+    public static final int PANEL_HEIGHT = 200;
     
     // Block sizes
     public static final int BLOCK_SIZE = 30;
