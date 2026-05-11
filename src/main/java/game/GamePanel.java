@@ -50,7 +50,7 @@ public class GamePanel extends JPanel {
         helpButton.setFocusable(false);
         helpButton.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH - 20, 30));
         helpButton.setBackground(Color.DARK_GRAY);
-        helpButton.setForeground(Color.WHITE);
+        helpButton.setForeground(Color.BLACK);
         
         // Add help button to a side panel at bottom
         JPanel sidePanel = new JPanel();
@@ -60,7 +60,7 @@ public class GamePanel extends JPanel {
         sidePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         
         // Create bottom panel for help button
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel bottomPanel = new JPanel();
         bottomPanel.setBackground(new Color(30, 30, 30));
         bottomPanel.add(helpButton);
         
@@ -113,9 +113,6 @@ public class GamePanel extends JPanel {
         
         // Draw game info at top-left
         drawGameInfo(g);
-        
-        // Draw help button in right panel at bottom
-        drawHelpButton(g);
         
         // Draw game over screen if game is over
         if (board.isGameOver()) {
@@ -204,27 +201,6 @@ public class GamePanel extends JPanel {
     }
     
     /**
-     * Draws the help button in the right panel area
-     */
-    private void drawHelpButton(Graphics g) {
-        // Draw help button area in right panel
-        int panelX = BOARD_WIDTH * BLOCK_SIZE + 10;
-        int panelY = BOARD_HEIGHT * BLOCK_SIZE - 40; // Position at bottom of right panel
-        
-        // Draw button area background
-        g.setColor(Color.DARK_GRAY);
-        g.fillRect(panelX, panelY, 160, 30);
-        
-        // Draw button border
-        g.setColor(Color.LIGHT_GRAY);
-        g.drawRect(panelX, panelY, 160, 30);
-        
-        // Draw button text
-        g.setColor(Color.WHITE);
-        g.drawString("Help", panelX + 70, panelY + 20);
-    }
-    
-    /**
      * Draws the next piece preview in the side panel
      */
     private void drawNextPiece(Graphics g) {
@@ -232,11 +208,11 @@ public class GamePanel extends JPanel {
         if (nextTetromino != null) {
             // Draw preview panel background
             g.setColor(new Color(30, 30, 30));
-            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 60);
+            g.fillRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 140);
             
             // Draw preview border
             g.setColor(Color.GRAY);
-            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 60);
+            g.drawRect(BOARD_WIDTH * BLOCK_SIZE + 10, 100, 140, 140);
             
             // Draw next piece label
             g.setColor(Color.WHITE);
@@ -294,7 +270,7 @@ public class GamePanel extends JPanel {
         
         // Draw restart button
         g.setColor(Color.GREEN);
-        g.drawString("Click Restart Button to Play Again", BOARD_WIDTH * BLOCK_SIZE / 2 - 130, BOARD_HEIGHT * BLOCK_SIZE / 2 + 50);
+        g.drawString("Press [R] to Play Again", BOARD_WIDTH * BLOCK_SIZE / 2 - 100, BOARD_HEIGHT * BLOCK_SIZE / 2 + 50);
     }
     
     /**
