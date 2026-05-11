@@ -6,6 +6,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 /**
  * Main game panel that handles rendering and user interaction
@@ -39,34 +41,43 @@ public class GamePanel extends JPanel {
         setOpaque(true);
         
         // Add focus listener to ensure GamePanel gets focus
-        addFocusListener(new java.awt.event.FocusAdapter() {
+        addFocusListener(new FocusAdapter() {
             @Override
-            public void focusGained(java.awt.event.FocusEvent e) {
+            public void focusGained(FocusEvent e) {
+                System.out.println("GamePanel gained focus");
                 // Ensure GamePanel gets focus when needed
                 if (!GamePanel.this.hasFocus()) {
                     GamePanel.this.requestFocusInWindow();
                 }
             }
+            
+            @Override
+            public void focusLost(FocusEvent e) {
+                System.out.println("GamePanel lost focus");
+            }
         });
         
-        // Initialize game timer for rendering
-        gameTimer = new Timer(16, e -> repaint()); // ~60 FPS
-        gameTimer.start();
+        // Add key listener for debugging purposes
+        addKeyListener(inputHandler);
+        System.out.println("Added KeyListener to GamePanel");
         
-        // Start the game loop
-        gameLoop.start();
-        
-        // Create dedicated side panel for UI elements
-        sidePanel = new SidePanel(board);
-        add(sidePanel, BorderLayout.EAST);
-        
-        // Add key bindings and ensure proper focus
+        // Add focus traversal keys disabled to avoid focus conflicts
         setFocusTraversalKeysEnabled(false);
+        
+        // Ensure GamePanel gets focus on initialization
+        SwingUtilities.invokeLater(() -> {
+            requestFocusInWindow();
+            System.out.println("Requested focus for GamePanel");
+        });
+        
+        // Debug: Check initial focus
+        System.out.println("Initial focus owner: " + KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
     }
     
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        System.out.println("Painting component - board area");
         // Clear the panel to avoid residual rendering
         g.clearRect(0, 0, getWidth(), getHeight());
         // Draw the game board (excluding UI elements)
@@ -77,6 +88,7 @@ public class GamePanel extends JPanel {
      * Draws the game board and all elements
      */
     private void drawBoard(Graphics g) {
+        System.out.println("Drawing board");
         // Draw dark background
         g.setColor(new Color(30, 30, 30));
         g.fillRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
@@ -106,6 +118,7 @@ public class GamePanel extends JPanel {
      * Draws the placed blocks on the board
      */
     private void drawPlacedBlocks(Graphics g) {
+        System.out.println("Drawing placed blocks");
         int[][] grid = board.getGrid();
         for (int row = 0; row < BOARD_HEIGHT; row++) {
             for (int col = 0; col < BOARD_WIDTH; col++) {
@@ -139,28 +152,53 @@ public class GamePanel extends JPanel {
         }
     }
     
-    /**
-     * Draws the current falling tetromino
-     */
-    private void drawCurrentTetromino(Graphics g) {
-        // Get current tetromino from board
-        Tetromino current = board.getCurrentTetromino();
-        if (current == null) return;
-        
-        // Draw the tetromino blocks
-        g.setColor(current.getColor());
-        int tetrominoRow = current.getRow();
-        int tetrominoCol = current.getCol();
-        for (int[] pos : current.getShape()) {
-            int x = (pos[1] + tetrominoCol) * BLOCK_SIZE;
-            int y = (pos[0] + tetrominoRow) * BLOCK_SIZE;
-            g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-            
-            // Draw block border
-            g.setColor(Color.BLACK);
-            g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+/**
+ * Draws the current falling tetromino
+ */
+private void drawCurrentTetromino(Graphics g) {
+    System.out.println("Drawing current tetromino");
+    // Get current tetromino from board
+    Tetromino current = board.getCurrentTetromino();
+    if (current == null) {
+        System.out.println("No current tetromino");
+        return;
+    }
+    
+    System.out.println("Current tetromino type: " + current.getType() + 
+                      ", row: " + current.getRow() + 
+                      ", col: " + current.getCol() + 
+                      ", rotation: " + current.getRotation());
+    
+    // Debug shape array
+    int[][] shape = current.getShape();
+    System.out.println("Current tetromino shape:");
+    for (int[] row : shape) {
+        System.out.println(java.util.Arrays.toString(row));
+    }
+    
+    // Draw the tetromino blocks
+    g.setColor(current.getColor());
+    int tetrominoRow = current.getRow();
+    int tetrominoCol = current.getCol();
+    System.out.println("Drawing tetromino blocks - row: " + tetrominoRow + ", col: " + tetrominoCol);
+    
+    // Fixed: Properly iterate through the shape matrix
+    for (int row = 0; row < shape.length; row++) {
+        for (int col = 0; col < shape[row].length; col++) {
+            if (shape[row][col] != 0) {
+                System.out.println("Shape pos: [" + row + ", " + col + "]");
+                int x = (col + tetrominoCol) * BLOCK_SIZE;
+                int y = (row + tetrominoRow) * BLOCK_SIZE;
+                System.out.println("Drawing block at x: " + x + ", y: " + y);
+                g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                
+                // Draw block border
+                g.setColor(Color.BLACK);
+                g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+            }
         }
     }
+}
     
     /**
      * Draws the game over screen
