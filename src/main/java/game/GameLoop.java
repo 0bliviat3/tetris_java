@@ -19,11 +19,37 @@ public class GameLoop implements ActionListener {
         this.board = board;
         this.gameTimer = new Timer(DEFAULT_GAME_SPEED, this);
         this.isRunning = false;
+        System.out.println("GameLoop created with timer: " + gameTimer);
+    }
+    
+    /**
+     * Starts the game loop
+     */
+    public void start() {
+        System.out.println("Starting GameLoop...");
+        if (!isRunning) {
+            gameTimer.start();
+            isRunning = true;
+            System.out.println("GameLoop started successfully");
+        }
+    }
+    
+    /**
+     * Stops the game loop
+     */
+    public void stop() {
+        System.out.println("Stopping GameLoop...");
+        if (isRunning) {
+            gameTimer.stop();
+            isRunning = false;
+            System.out.println("GameLoop stopped successfully");
+        }
     }
     
     @Override
     public void actionPerformed(ActionEvent e) {
         // Game loop logic - update game state
+        System.out.println("GameLoop tick - isRunning: " + isRunning);
         if (isRunning) {
             update();
         }
@@ -36,26 +62,6 @@ public class GameLoop implements ActionListener {
         // Move the current tetromino down one row
         if (!board.isGameOver() && !board.isPaused()) {
             board.moveDown();
-        }
-    }
-    
-    /**
-     * Starts the game loop
-     */
-    public void start() {
-        if (!isRunning) {
-            gameTimer.start();
-            isRunning = true;
-        }
-    }
-    
-    /**
-     * Stops the game loop
-     */
-    public void stop() {
-        if (isRunning) {
-            gameTimer.stop();
-            isRunning = false;
         }
     }
     

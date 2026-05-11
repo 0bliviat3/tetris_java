@@ -39,22 +39,9 @@ public class GamePanel extends JPanel {
         setFocusable(true);
         setOpaque(true);
         
-        // Add focus listener to ensure GamePanel gets focus
-        addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                System.out.println("GamePanel gained focus");
-                // Ensure GamePanel gets focus when needed
-                if (!GamePanel.this.hasFocus()) {
-                    GamePanel.this.requestFocusInWindow();
-                }
-            }
-            
-            @Override
-            public void focusLost(FocusEvent e) {
-                System.out.println("GamePanel lost focus");
-            }
-        });
+        // Add side panel 
+        sidePanel = new SidePanel(board);
+        add(sidePanel, BorderLayout.EAST);
         
         // Add key listener for debugging purposes
         addKeyListener(inputHandler);
@@ -71,6 +58,10 @@ public class GamePanel extends JPanel {
         
         // Debug: Check initial focus
         System.out.println("Initial focus owner: " + KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+        
+        // Start the game loop after initialization
+        gameLoop.start();
+        System.out.println("Started GameLoop from GamePanel");
     }
     
     @Override
@@ -151,53 +142,53 @@ public class GamePanel extends JPanel {
         }
     }
     
-/**
- * Draws the current falling tetromino
- */
-private void drawCurrentTetromino(Graphics g) {
-    System.out.println("Drawing current tetromino");
-    // Get current tetromino from board
-    Tetromino current = board.getCurrentTetromino();
-    if (current == null) {
-        System.out.println("No current tetromino");
-        return;
-    }
-    
-    System.out.println("Current tetromino type: " + current.getType() + 
-                      ", row: " + current.getRow() + 
-                      ", col: " + current.getCol() + 
-                      ", rotation: " + current.getRotation());
-    
-    // Debug shape array
-    int[][] shape = current.getShape();
-    System.out.println("Current tetromino shape:");
-    for (int[] row : shape) {
-        System.out.println(java.util.Arrays.toString(row));
-    }
-    
-    // Draw the tetromino blocks
-    g.setColor(current.getColor());
-    int tetrominoRow = current.getRow();
-    int tetrominoCol = current.getCol();
-    System.out.println("Drawing tetromino blocks - row: " + tetrominoRow + ", col: " + tetrominoCol);
-    
-    // Fixed: Properly iterate through the shape matrix
-    for (int row = 0; row < shape.length; row++) {
-        for (int col = 0; col < shape[row].length; col++) {
-            if (shape[row][col] != 0) {
-                System.out.println("Shape pos: [" + row + ", " + col + "]");
-                int x = (col + tetrominoCol) * BLOCK_SIZE;
-                int y = (row + tetrominoRow) * BLOCK_SIZE;
-                System.out.println("Drawing block at x: " + x + ", y: " + y);
-                g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                
-                // Draw block border
-                g.setColor(Color.BLACK);
-                g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+    /**
+     * Draws the current falling tetromino
+     */
+    private void drawCurrentTetromino(Graphics g) {
+        System.out.println("Drawing current tetromino");
+        // Get current tetromino from board
+        Tetromino current = board.getCurrentTetromino();
+        if (current == null) {
+            System.out.println("No current tetromino");
+            return;
+        }
+        
+        System.out.println("Current tetromino type: " + current.getType() + 
+                          ", row: " + current.getRow() + 
+                          ", col: " + current.getCol() + 
+                          ", rotation: " + current.getRotation());
+        
+        // Debug shape array
+        int[][] shape = current.getShape();
+        System.out.println("Current tetromino shape:");
+        for (int[] row : shape) {
+            System.out.println(java.util.Arrays.toString(row));
+        }
+        
+        // Draw the tetromino blocks
+        g.setColor(current.getColor());
+        int tetrominoRow = current.getRow();
+        int tetrominoCol = current.getCol();
+        System.out.println("Drawing tetromino blocks - row: " + tetrominoRow + ", col: " + tetrominoCol);
+        
+        // Fixed: Properly iterate through the shape matrix
+        for (int row = 0; row < shape.length; row++) {
+            for (int col = 0; col < shape[row].length; col++) {
+                if (shape[row][col] != 0) {
+                    System.out.println("Shape pos: [" + row + ", " + col + "]");
+                    int x = (col + tetrominoCol) * BLOCK_SIZE;
+                    int y = (row + tetrominoRow) * BLOCK_SIZE;
+                    System.out.println("Drawing block at x: " + x + ", y: " + y);
+                    g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                    
+                    // Draw block border
+                    g.setColor(Color.BLACK);
+                    g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                }
             }
         }
     }
-}
     
     /**
      * Draws the game over screen
