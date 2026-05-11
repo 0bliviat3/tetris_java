@@ -26,14 +26,14 @@ public class GameLoop implements ActionListener {
         this.board = board;
         this.isRunning = false;
     }
-    
+
     /**
      * Sets the GamePanel reference for repaint notifications
      */
     public void setGamePanel(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
     }
-    
+
     /**
      * Starts the game loop with fixed timestep
      */
@@ -46,7 +46,7 @@ public class GameLoop implements ActionListener {
             isRunning = true;
         }
     }
-    
+
     /**
      * Stops the game loop
      */
@@ -54,23 +54,23 @@ public class GameLoop implements ActionListener {
         System.out.println("Stopping GameLoop...");
         isRunning = false;
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
         // Fixed timestep game loop
         long currentTime = System.currentTimeMillis();
         long deltaTime = currentTime - lastFrameTime;
-        
+
         if (deltaTime >= FRAME_TIME) {
             // Update game state at fixed interval
             update();
-            
+
             // Mark that we should render this frame
             shouldRender = true;
-            
+
             lastFrameTime = currentTime;
         }
-        
+
         // Only repaint if we have a new frame to display
         if (shouldRender && gamePanel != null) {
             // Trigger repaint only once per frame
@@ -80,7 +80,7 @@ public class GameLoop implements ActionListener {
             shouldRender = false; // Reset render flag after painting
         }
     }
-    
+
     /**
      * Updates game state at fixed intervals
      */
@@ -90,7 +90,7 @@ public class GameLoop implements ActionListener {
             board.moveDown();
         }
     }
-    
+
     /**
      * Updates the game speed based on level
      */
@@ -98,7 +98,7 @@ public class GameLoop implements ActionListener {
         // Speed adjustment is handled by the fixed timestep approach
         // which maintains consistent frame rate regardless of game speed
     }
-    
+
     /**
      * Gets the board instance
      */
@@ -107,74 +107,3 @@ public class GameLoop implements ActionListener {
     }
 }
     
-    /**
-     * Sets the GamePanel reference for repaint notifications
-     */
-    public void setGamePanel(GamePanel gamePanel) {
-        this.gamePanel = gamePanel;
-    }
-    
-    /**
-     * Starts the game loop
-     */
-    public void start() {
-        System.out.println("Starting GameLoop...");
-        if (!isRunning) {
-            gameTimer.start();
-            isRunning = true;
-        }
-    }
-    
-    /**
-     * Stops the game loop
-     */
-    public void stop() {
-        System.out.println("Stopping GameLoop...");
-        if (isRunning) {
-            gameTimer.stop();
-            isRunning = false;
-        }
-    }
-    
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // Game loop logic - update game state
-        if (isRunning) {
-            update();
-        }
-    }
-    
-    /**
-     * Updates game state
-     */
-    private void update() {
-        // Move the current tetromino down one row
-        if (!board.isGameOver() && !board.isPaused()) {
-            board.moveDown();
-            // Trigger repaint after update
-            if (gamePanel != null) {
-                // Use SwingUtilities.invokeLater to ensure thread safety
-                SwingUtilities.invokeLater(() -> {
-                    gamePanel.repaint(); // Explicitly trigger repaint
-                });
-            }
-        }
-    }
-    
-    /**
-     * Updates the game speed based on level
-     */
-    public void setSpeed(int level) {
-        int speed = Math.max(GameConstants.MIN_DROP_SPEED, 
-                           GameConstants.INITIAL_DROP_SPEED - 
-                           (level * GameConstants.SPEED_DECREMENT_PER_LEVEL));
-        gameTimer.setDelay(speed);
-    }
-    
-    /**
-     * Gets the board instance
-     */
-    public Board getBoard() {
-        return board;
-    }
-}
