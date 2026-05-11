@@ -131,14 +131,15 @@ public class GamePanel extends JPanel {
      * Gets the color for a block based on its ID
      */
     private Color getColorForBlock(int blockId) {
+        // Map block IDs to colors using the same definitions as Tetromino.COLORS
         switch (blockId) {
-            case 1: return Color.CYAN;
-            case 2: return Color.BLUE;
-            case 3: return Color.ORANGE;
-            case 4: return Color.YELLOW;
-            case 5: return Color.GREEN;
-            case 6: return Color.MAGENTA;
-            case 7: return Color.RED;
+            case 1: return Color.CYAN;    // I piece
+            case 2: return Color.YELLOW;  // O piece
+            case 3: return Color.MAGENTA; // T piece
+            case 4: return Color.GREEN;   // S piece
+            case 5: return Color.RED;     // Z piece
+            case 6: return Color.BLUE;    // J piece
+            case 7: return Color.ORANGE;  // L piece
             default: return Color.GRAY;
         }
     }
