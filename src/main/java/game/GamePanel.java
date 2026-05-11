@@ -13,23 +13,38 @@ public class GamePanel extends JPanel {
     
     private Board board;
     private GameLoop gameLoop;
+    private SidePanel sidePanel;
     
     public GamePanel(Board board) {
         this.board = board;
         
+        // Initialize game loop
+        this.gameLoop = new GameLoop(board);
+        
         // Enable double buffering for smoother rendering
         setDoubleBuffered(true);
         
-        // Initialize the board
-        this.board = board;
+        // Set layout manager to BorderLayout
+        setLayout(new BorderLayout());
+        
+        // Initialize side panel
+        sidePanel = new SidePanel(board);
+        add(sidePanel, BorderLayout.EAST);
         
         // Setup panel properties
         setPreferredSize(new Dimension(BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE));
         setBackground(Color.BLACK);
+        
+        // Setup input handling
+        InputHandler inputHandler = new InputHandler(this);
+        addKeyListener(inputHandler);
+        setFocusable(true);
+        requestFocusInWindow();
     }
     
     @Override
     protected void paintComponent(Graphics g) {
+        System.out.println("paintComponent called");
         super.paintComponent(g);
         
         // Draw placed blocks
@@ -87,6 +102,7 @@ public class GamePanel extends JPanel {
      * Draws the current falling tetromino
      */
     private void drawCurrentTetromino(Graphics g) {
+        System.out.println("drawCurrentTetromino called");
         Tetromino current = board.getCurrentTetromino();
         if (current == null) {
             return;

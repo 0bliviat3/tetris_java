@@ -34,6 +34,9 @@ public class Main {
         GamePanel gamePanel = new GamePanel(board);
         GameLoop gameLoop = new GameLoop(board);
         
+        // Set up game loop reference to game panel for repaint notifications
+        gameLoop.setGamePanel(gamePanel);
+        
         // Add game panel
         frame.add(gamePanel);
         
