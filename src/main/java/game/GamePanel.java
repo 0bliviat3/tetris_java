@@ -75,6 +75,11 @@ public class GamePanel extends JPanel {
         
         // Draw current tetromino
         drawCurrentTetromino(g);
+        
+        // Draw game over message if game is over
+        if (board.isGameOver()) {
+            drawGameOverMessage(g);
+        }
     }
     
     /**
@@ -149,6 +154,38 @@ public class GamePanel extends JPanel {
      */
     public void startGame() {
         gameLoop.start();
+    }
+    
+    /**
+     * Draws the game over message centered on screen
+     */
+    private void drawGameOverMessage(Graphics g) {
+        // Set up graphics for text rendering
+        Graphics2D g2d = (Graphics2D) g.create();
+        
+        // Enable anti-aliasing for better text rendering
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        
+        // Set text properties
+        g2d.setColor(Color.RED); // Red text for high visibility
+        Font font = new Font("Arial", Font.BOLD, 48); // Large bold font
+        g2d.setFont(font);
+        
+        // Calculate text dimensions
+        String message = "GAME OVER";
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(message);
+        int textHeight = fm.getAscent();
+        
+        // Center the text on the screen - using panel width and height
+        int x = (getWidth() - textWidth) / 2;
+        int y = (getHeight() - textHeight) / 2 + textHeight;
+        
+        // Draw the text
+        g2d.drawString(message, x, y);
+        
+        // Clean up
+        g2d.dispose();
     }
     
     /**
