@@ -29,9 +29,16 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
         
+        // Initialize game components
+        Board board = new Board();
+        GamePanel gamePanel = new GamePanel(board);
+        GameLoop gameLoop = new GameLoop(board);
+        
         // Add game panel
-        GamePanel gamePanel = new GamePanel();
         frame.add(gamePanel);
+        
+        // Start the game loop
+        gameLoop.start();
         
         // Pack and center the window
         frame.pack();

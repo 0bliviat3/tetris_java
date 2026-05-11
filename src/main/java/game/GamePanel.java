@@ -4,14 +4,15 @@ import game.constants.GameConstants;
 
 import javax.swing.*;
 import java.awt.*;
-import javax.swing.*;
+import java.util.Arrays;
 
 public class GamePanel extends JPanel {
-    private static final int BOARD_WIDTH = 10;
-    private static final int BOARD_HEIGHT = 20;
-    private static final int BLOCK_SIZE = 30;
+    private static final int BOARD_WIDTH = GameConstants.BOARD_WIDTH;
+    private static final int BOARD_HEIGHT = GameConstants.BOARD_HEIGHT;
+    private static final int BLOCK_SIZE = GameConstants.BLOCK_SIZE;
     
     private Board board;
+    private GameLoop gameLoop;
     
     public GamePanel(Board board) {
         this.board = board;
@@ -19,10 +20,11 @@ public class GamePanel extends JPanel {
         // Enable double buffering for smoother rendering
         setDoubleBuffered(true);
         
-        // Set preferred size
-        setPreferredSize(new Dimension(BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE));
+        // Initialize the board
+        this.board = board;
         
-        // Set background color
+        // Setup panel properties
+        setPreferredSize(new Dimension(BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE));
         setBackground(Color.BLACK);
     }
     
@@ -35,97 +37,6 @@ public class GamePanel extends JPanel {
         
         // Draw current tetromino
         drawCurrentTetromino(g);
-    }
-    
-    /**
-     * Draws the placed blocks on the board
-     */
-    private void drawPlacedBlocks(Graphics g) {
-        // Get the board state
-        int[][] grid = board.getGrid();
-        
-        // Draw each block in the grid
-        for (int row = 0; row < BOARD_HEIGHT; row++) {
-            for (int col = 0; col < BOARD_WIDTH; col++) {
-                if (grid[row][col] != 0) {
-                    // Get the color of the block
-                    Color color = Tetromino.getColorForType(grid[row][col]);
-                    g.setColor(color);
-                    
-                    // Draw the block
-                    int x = col * BLOCK_SIZE;
-                    int y = row * BLOCK_SIZE;
-                    g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                    
-                    // Draw block border
-                    g.setColor(Color.BLACK);
-                    g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Draws the current falling tetromino
-     */
-    private void drawCurrentTetromino(Graphics g) {
-        System.out.println("Drawing current tetromino");
-        // Get current tetromino from board
-        Tetromino current = board.getCurrentTetromino();
-        if (current == null) {
-            System.out.println("No current tetromino");
-            return;
-        }
-        
-        System.out.println("Current tetromino type: " + current.getType() + 
-                          ", row: " + current.getRow() + 
-                          ", col: " + current.getCol() + 
-                          ", rotation: " + current.getRotation());
-        
-        // Debug shape array
-        int[][] shape = current.getShape();
-        System.out.println("Current tetromino shape:");
-        for (int[] row : shape) {
-            System.out.println(java.util.Arrays.toString(row));
-        }
-        
-        // Draw the tetromino blocks
-        Color originalColor = g.getColor();
-        g.setColor(current.getColor());
-        int tetrominoRow = current.getRow();
-        int tetrominoCol = current.getCol();
-        System.out.println("Drawing tetromino blocks - row: " + tetrominoRow + ", col: " + tetrominoCol);
-        
-        // Fixed: Properly iterate through the shape matrix
-        for (int row = 0; row < shape.length; row++) {
-            for (int col = 0; col < shape[row].length; col++) {
-                if (shape[row][col] != 0) {
-                    System.out.println("Shape pos: [" + row + ", " + col + "]");
-                    int x = (col + tetrominoCol) * BLOCK_SIZE;
-                    int y = (row + tetrominoRow) * BLOCK_SIZE;
-                    System.out.println("Drawing block at x: " + x + ", y: " + y);
-                    g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                    
-                    // Draw block border
-                    g.setColor(Color.BLACK);
-                    g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                    
-                    // Restore original color
-                    g.setColor(originalColor);
-                }
-            }
-        }
-    }
-}
-    
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        System.out.println("Painting component - board area");
-        // Clear the panel to avoid residual rendering
-        g.clearRect(0, 0, getWidth(), getHeight());
-        // Draw the game board (excluding UI elements)
-        drawBoard(g);
     }
     
     /**
@@ -149,30 +60,22 @@ public class GamePanel extends JPanel {
         // Draw placed blocks
         drawPlacedBlocks(g);
         
-        // Draw current tetromino if exists
+        // Draw current tetromino
         drawCurrentTetromino(g);
-        
-        // Draw game over screen if game is over
-        if (board.isGameOver()) {
-            drawGameOver(g);
-        }
     }
     
     /**
      * Draws the placed blocks on the board
      */
     private void drawPlacedBlocks(Graphics g) {
-        System.out.println("Drawing placed blocks");
         int[][] grid = board.getGrid();
         for (int row = 0; row < BOARD_HEIGHT; row++) {
             for (int col = 0; col < BOARD_WIDTH; col++) {
                 if (grid[row][col] != 0) {
-                    // Draw colored block
-                    Color color = getBlockColor(grid[row][col]);
+                    Color color = getColorForBlock(grid[row][col]);
                     g.setColor(color);
                     g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
                     
-                    // Draw block border
                     g.setColor(Color.BLACK);
                     g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
                 }
@@ -181,10 +84,46 @@ public class GamePanel extends JPanel {
     }
     
     /**
-     * Gets the color for a given block type
+     * Draws the current falling tetromino
      */
-    private Color getBlockColor(int blockType) {
-        switch (blockType) {
+    private void drawCurrentTetromino(Graphics g) {
+        Tetromino current = board.getCurrentTetromino();
+        if (current == null) {
+            return;
+        }
+        
+        int[][] shape = current.getShape();
+        System.out.println("Current tetromino shape:");
+        for (int[] row : shape) {
+            System.out.println(Arrays.toString(row));
+        }
+        
+        g.setColor(current.getColor());
+        int tetrominoRow = current.getRow();
+        int tetrominoCol = current.getCol();
+        System.out.println("Drawing tetromino blocks - row: " + tetrominoRow + ", col: " + tetrominoCol);
+        
+        for (int row = 0; row < shape.length; row++) {
+            for (int col = 0; col < shape[row].length; col++) {
+                if (shape[row][col] != 0) {
+                    int x = (col + tetrominoCol) * BLOCK_SIZE;
+                    int y = (row + tetrominoRow) * BLOCK_SIZE;
+                    System.out.println("Drawing block at x: " + x + ", y: " + y);
+                    g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                    
+                    g.setColor(Color.BLACK);
+                    g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                    g.setColor(current.getColor());
+                }
+            }
+        }
+    }
+    
+    /**
+     * Gets the color for a block based on its ID
+     */
+    private Color getColorForBlock(int blockId) {
+        switch (blockId) {
             case 1: return Color.CYAN;
             case 2: return Color.BLUE;
             case 3: return Color.ORANGE;
@@ -194,90 +133,6 @@ public class GamePanel extends JPanel {
             case 7: return Color.RED;
             default: return Color.GRAY;
         }
-    }
-    
-/**
- * Draws the current falling tetromino
- */
-private void drawCurrentTetromino(Graphics g) {
-    System.out.println("Drawing current tetromino");
-    // Get current tetromino from board
-    Tetromino current = board.getCurrentTetromino();
-    if (current == null) {
-        System.out.println("No current tetromino");
-        return;
-    }
-    
-    System.out.println("Current tetromino type: " + current.getType() + 
-                      ", row: " + current.getRow() + 
-                      ", col: " + current.getCol() + 
-                      ", rotation: " + current.getRotation());
-    
-    // Debug shape array
-    int[][] shape = current.getShape();
-    System.out.println("Current tetromino shape:");
-    for (int[] row : shape) {
-        System.out.println(java.util.Arrays.toString(row));
-    }
-    
-    // Draw the tetromino blocks
-    Color originalColor = g.getColor();
-    g.setColor(current.getColor());
-    int tetrominoRow = current.getRow();
-    int tetrominoCol = current.getCol();
-    System.out.println("Drawing tetromino blocks - row: " + tetrominoRow + ", col: " + tetrominoCol);
-    
-    // Fixed: Properly iterate through the shape matrix
-    for (int row = 0; row < shape.length; row++) {
-        for (int col = 0; col < shape[row].length; col++) {
-            if (shape[row][col] != 0) {
-                System.out.println("Shape pos: [" + row + ", " + col + "]");
-                int x = (col + tetrominoCol) * BLOCK_SIZE;
-                int y = (row + tetrominoRow) * BLOCK_SIZE;
-                System.out.println("Drawing block at x: " + x + ", y: " + y);
-                g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                
-                // Draw block border
-                g.setColor(Color.BLACK);
-                g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                
-                // Restore original color
-                g.setColor(originalColor);
-            }
-        }
-    }
-}
-    
-    /**
-     * Draws the game over screen
-     */
-    private void drawGameOver(Graphics g) {
-        // Draw semi-transparent overlay
-        g.setColor(new Color(0, 0, 0, 150));
-        g.fillRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
-        
-        // Draw game over text
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 24));
-        FontMetrics fm = g.getFontMetrics();
-        String gameOverText = "GAME OVER";
-        int x = (BOARD_WIDTH * BLOCK_SIZE - fm.stringWidth(gameOverText)) / 2;
-        int y = (BOARD_HEIGHT * BLOCK_SIZE + fm.getAscent()) / 2;
-        g.drawString(gameOverText, x, y);
-    }
-    
-    /**
-     * Shows the help dialog
-     */
-    private void showHelpDialog() {
-        JOptionPane.showMessageDialog(this,
-            "Tetris Game Help:\n" +
-            "- Arrow keys: Move tetromino\n" +
-            "- Space: Hard drop\n" +
-            "- P: Pause game\n" +
-            "- R: Restart game",
-            "Help",
-            JOptionPane.INFORMATION_MESSAGE);
     }
     
     /**
