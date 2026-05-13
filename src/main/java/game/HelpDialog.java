@@ -95,6 +95,7 @@ public class HelpDialog extends JDialog {
             "Rotate:      ↑ Arrow Key",
             "Hard Drop:   Spacebar",
             "Pause Game:  P Key",
+            "Restart Game: R key",
             "Close Help:  ESC Key"
         };
         
