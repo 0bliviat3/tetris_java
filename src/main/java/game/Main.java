@@ -1,7 +1,6 @@
 package game;
 
 import javax.swing.*;
-import java.awt.*;
 
 /**
  * Main entry point for the Tetris game
@@ -16,9 +15,7 @@ public class Main {
         }
         
         // Schedule GUI creation on Event Dispatch Thread
-        SwingUtilities.invokeLater(() -> {
-            createAndShowGUI();
-        });
+        SwingUtilities.invokeLater(Main::createAndShowGUI);
     }
     
     /**

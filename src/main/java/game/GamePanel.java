@@ -14,7 +14,6 @@ public class GamePanel extends JPanel {
     private static final int BLOCK_SIZE = GameConstants.BLOCK_SIZE;
 
     private Board board;
-    private GameLoop gameLoop;
     private SidePanel sidePanel;
 
     // Double buffering for improved rendering
@@ -27,9 +26,6 @@ public class GamePanel extends JPanel {
 
     public GamePanel(Board board) {
         this.board = board;
-
-        // Initialize game loop
-        this.gameLoop = new GameLoop(board);
 
         // Enable double buffering for smoother rendering
         setDoubleBuffered(false); // We'll handle it manually for better control
@@ -196,13 +192,6 @@ public class GamePanel extends JPanel {
     }
 
     /**
-     * Starts the game loop
-     */
-    public void startGame() {
-        gameLoop.start();
-    }
-
-    /**
      * Draws the game over message centered on screen
      */
     private void drawGameOverMessage(Graphics g) {
@@ -232,13 +221,6 @@ public class GamePanel extends JPanel {
 
         // Clean up
         g2d.dispose();
-    }
-
-    /**
-     * Stops the game loop
-     */
-    public void stopGame() {
-        gameLoop.stop();
     }
 
     /**

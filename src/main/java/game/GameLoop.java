@@ -107,14 +107,6 @@ public class GameLoop implements ActionListener {
     }
 
     /**
-     * Updates the game speed based on level
-     */
-    public void setSpeed(int level) {
-        // Speed adjustment is handled by the fixed timestep approach
-        // which maintains consistent frame rate regardless of game speed
-    }
-
-    /**
      * Gets the board instance
      */
     public Board getBoard() {

@@ -5,9 +5,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import game.Board;
-import game.Tetromino;
-
 import static game.constants.GameConstants.PANEL_HEIGHT;
 import static game.constants.GameConstants.PANEL_WIDTH;
 
@@ -76,6 +73,7 @@ public class SidePanel extends JPanel {
         // Get current score and level from the board
         int score = board.getScore();
         int level = board.getLevel();
+        int clearedLine = board.getLinesCleared();
         
         // Set font and color for text rendering
         g.setFont(new Font("Arial", Font.BOLD, 14));
@@ -86,6 +84,9 @@ public class SidePanel extends JPanel {
         
         // Draw level label and value
         g.drawString("Level: " + level, 10, 50);
+
+        // Draw clear line label and value
+        g.drawString("lines: " + clearedLine, 10, 70);
     }
     
     /**
@@ -99,7 +100,7 @@ public class SidePanel extends JPanel {
         
         // Calculate position for preview
         int previewX = 10;
-        int previewY = 70;
+        int previewY = 100;
         
         // Draw preview box
         g.setColor(new Color(50, 50, 50));

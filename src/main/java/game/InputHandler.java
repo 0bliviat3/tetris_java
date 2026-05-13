@@ -1,8 +1,9 @@
 package game;
 
-import javax.swing.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+
+import static game.constants.GameConstants.*;
 
 /**
  * Handles keyboard input for the game
@@ -20,31 +21,31 @@ public class InputHandler extends KeyAdapter {
         
         // Handle key press events
         switch(e.getKeyCode()) {
-            case KeyEvent.VK_P:
+            case KEY_P:
                 // Toggle pause
                 togglePause();
                 break;
-            case KeyEvent.VK_R:
+            case KEY_R:
                 // Restart game
                 restartGame();
                 break;
-            case KeyEvent.VK_LEFT:
+            case KEY_LEFT:
                 // Move left
                 moveLeft();
                 break;
-            case KeyEvent.VK_RIGHT:
+            case KEY_RIGHT:
                 // Move right
                 moveRight();
                 break;
-            case KeyEvent.VK_DOWN:
+            case KEY_DOWN:
                 // Soft drop
                 softDrop();
                 break;
-            case KeyEvent.VK_UP:
+            case KEY_UP:
                 // Rotate
                 rotate();
                 break;
-            case KeyEvent.VK_SPACE:
+            case KEY_SPACE:
                 // Hard drop
                 hardDrop();
                 break;
